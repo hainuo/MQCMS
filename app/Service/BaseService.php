@@ -7,6 +7,7 @@ use App\Constants\ErrorCode;
 use App\Exception\BusinessException;
 use App\Model\Model;
 use App\Utils\Common;
+use Carbon\Carbon;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\Paginator\Paginator;
 
@@ -161,8 +162,8 @@ class BaseService
                 return [];
             }
             $data = $info->toArray();
-            isset($info->created_at) && $data['created_at'] = $info->created_at->toDateTimeString();
-            isset($info->updated_at) && $data['updated_at'] = $info->updated_at->toDateTimeString();
+            isset($info->created_at) && $data['created_at'] = $info->created_at instanceof Carbon ? $info->created_at->toDateTimeString() : date('Y-m-d H:i:s', $info->created_at);
+            isset($info->updated_at) && $data['updated_at'] = $info->updated_at instanceof Carbon ? $info->updated_at->toDateTimeString() : date('Y-m-d H:i:s', $info->updated_at);
             return $data;
 
         } catch (\Exception $e) {
