@@ -50,11 +50,7 @@ class BaseService
      * 单表（如果连表查单表数据）：
      * ['*']
      * ['字段', ...]
-     * 关联模型使用以下方式：
-     * [
-     *    关联模型名称1 => ['字段', ....],
-     *    关联模型名称2 => ['字段', ....],
-     * ]
+     *
      * 多变join方式：
      * [
      *    表名 => ['字段', ....],
@@ -97,8 +93,13 @@ class BaseService
     /**
      * Relations
      * @var array
-     * 用法：
+     * 用法1：
      * [relationsName1，relationsName2...]
+     * 用法2：（查询个别字段）
+     * [
+     *    关联模型名称1 => ['字段', ....],
+     *    关联模型名称2 => ['字段', ....],
+     * ]
      */
     public $with = [];
 
@@ -260,7 +261,7 @@ class BaseService
         $select = $this->select;
         $query = $this->multiTableJoinQueryBuilder();
         $count = $query->count();
-        $pagination = $query->paginate($limit, $select, 'page', $page)->toArray();
+        $pagination = $query->paginate($limit, array_values($select), 'page', $page)->toArray();
         $pagination['total'] = $count;
         return $pagination;
     }
@@ -290,18 +291,14 @@ class BaseService
         $query = $this->model::query();
 
         if (!empty($this->with)) {
-            $baseSelect = $this->select;
-            array_walk($this->with, function ($item) use (&$query, $baseSelect) {
-                $query = $query->with([$item => function ($query) use ($item, $baseSelect) {
-                    if (isset($baseSelect[$item])) {
-                        return $query->select($baseSelect[$item]);
-                    }
+            array_walk($this->with, function (&$item, $key) use (&$query) {
+                $query = $query->with([$key => function ($query) use ($item) {
+                    return $query->select($item);
                 }]);
             });
         } else {
             if (is_array($this->joinTables) && !empty($this->joinTables)) {
-                array_walk($this->joinTables, function (&$item) use (&$query) {
-                    $key = array_search($item, $this->joinTables);
+                array_walk($this->joinTables, function (&$item, $key) use (&$query) {
                     if (count($item) === 3) {
                         $query = $query->leftJoin($key, $item[0], $item[1], $item[2]);
                     }
