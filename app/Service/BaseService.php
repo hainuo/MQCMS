@@ -257,9 +257,10 @@ class BaseService
      */
     public function getListByPage(int $page, int $limit)
     {
+        $select = $this->select;
         $query = $this->multiTableJoinQueryBuilder();
         $count = $query->count();
-        $pagination = $query->paginate($limit, $this->select, 'page', $page)->toArray();
+        $pagination = $query->paginate($limit, $select, 'page', $page)->toArray();
         $pagination['total'] = $count;
         return $pagination;
     }
