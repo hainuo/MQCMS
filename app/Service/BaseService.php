@@ -156,12 +156,14 @@ class BaseService
     public function show(RequestInterface $request)
     {
         try {
-            $info = $this->multiTableJoinQueryBuilder()->first()->toArray();
-            if ($info) {
-                isset($info['created_at']) && $info['created_at'] = date('Y-m-d H:i:s', (int) $info['created_at']);
-                isset($info['updated_at']) && $info['updated_at'] = date('Y-m-d H:i:s', (int) $info['updated_at']);
+            $info = $this->multiTableJoinQueryBuilder()->first();
+            if (!$info) {
+                return [];
             }
-            return $info;
+            $data = $info->toArray();
+            isset($info->created_at) && $data['created_at'] = $info->created_at->toDateTimeString();
+            isset($info->updated_at) && $data['updated_at'] = $info->updated_at->toDateTimeString();
+            return $data;
 
         } catch (\Exception $e) {
             throw new BusinessException((int)$e->getCode(), $e->getMessage());
@@ -211,7 +213,7 @@ class BaseService
             $data = $this->data;
             if (!empty($this->condition)) {
                 $model = $this->multiTableJoinQueryBuilder()->first();
-                if (!$model->toArray()) {
+                if (!$model) {
                     $model = new $this->model;
                 }
             } else {
