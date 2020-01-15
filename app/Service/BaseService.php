@@ -138,8 +138,8 @@ class BaseService
 
             $pagination = $this->getListByPage((int) $page, (int) $limit);
             foreach ($pagination['data'] as $key => &$value) {
-                $value['created_at'] && $value['created_at'] = date('Y-m-d H:i:s', (int) $value['created_at']);
-                $value['updated_at'] && $value['updated_at'] = date('Y-m-d H:i:s', (int) $value['updated_at']);
+                isset($value['created_at']) && $value['created_at'] = date('Y-m-d H:i:s', (int) $value['created_at']);
+                isset($value['updated_at']) && $value['updated_at'] = date('Y-m-d H:i:s', (int) $value['updated_at']);
             }
             return $pagination;
 
@@ -158,8 +158,8 @@ class BaseService
         try {
             $info = $this->multiTableJoinQueryBuilder()->first()->toArray();
             if ($info) {
-                $info['created_at'] && $info['created_at'] = date('Y-m-d H:i:s', (int) $info['created_at']);
-                $info['updated_at'] && $info['updated_at'] = date('Y-m-d H:i:s', (int) $info['updated_at']);
+                isset($info['created_at']) && $info['created_at'] = date('Y-m-d H:i:s', (int) $info['created_at']);
+                isset($info['updated_at']) && $info['updated_at'] = date('Y-m-d H:i:s', (int) $info['updated_at']);
             }
             return $info;
 

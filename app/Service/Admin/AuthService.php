@@ -85,7 +85,7 @@ class AuthService extends BaseService
             throw new BusinessException(ErrorCode::BAD_REQUEST, '账号不存在或被限制登录');
         }
 
-        if ($adminInfo->password != Common::generatePasswordHash($password, $adminInfo->salt)) {
+        if ($adminInfo['password'] != Common::generatePasswordHash($password, $adminInfo['salt'])) {
             throw new BusinessException(ErrorCode::BAD_REQUEST, '密码不正确');
         }
         return $adminInfo;
