@@ -291,10 +291,16 @@ class BaseService
         $query = $this->model::query();
 
         if (!empty($this->with)) {
-            array_walk($this->with, function (&$item, $key) use (&$query) {
-                $query = $query->with([$key => function ($query) use ($item) {
-                    return $query->select($item);
-                }]);
+            $arrCount = Common::getArrCountRecursive($this->with);
+            array_walk($this->with, function (&$item, $key) use (&$query, $arrCount) {
+                if ($arrCount === 1) {
+                    $query = $query->with($item);
+
+                } else if ($arrCount === 2 && !is_numeric($key)) {
+                    $query = $query->with([$key => function ($query) use ($item) {
+                        return $query->select($item);
+                    }]);
+                }
             });
         } else {
             if (is_array($this->joinTables) && !empty($this->joinTables)) {
