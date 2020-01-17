@@ -28,7 +28,7 @@ class AttachmentController extends BaseController
     /**
      * @RequestMapping(path="update", methods="post")
      * @param RequestInterface $request
-     * @return intK
+     * @return int
      */
     public function update(RequestInterface $request)
     {
