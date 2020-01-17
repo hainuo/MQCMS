@@ -22,5 +22,5 @@ class %CLASS% extends BaseController
      * @Inject()
      * @var %SERVICE%
      */
-    public $service;
+    public $logic;
 }
