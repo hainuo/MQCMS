@@ -99,41 +99,40 @@ class TagService extends BaseService
      * @param RequestInterface $request
      * @return mixed
      */
-    public function postList($id, $post=[])
+    public function postList($id, $post=[], $page = 1, $limit = 10)
     {
         try {
             $this->with = [
-                'postIds'
+                'postIds' => ['tag_id', 'post_id']
             ];
             $this->condition = ['id' => $id];
             $tagInfo = parent::show();
-            $postIds = $tagInfo['post_ids'];
-            print_r($postIds);
-            // $this->tagPostRelationService->condition = ['tag_id' => $id];
-            // $postIds = $this->tagPostRelationService->multiTableJoinQueryBuilder()->pluck('post_id')->toArray();
-            //
-            // $this->postService->condition = [
-            //     ['status', '=', 1],
-            //     ['is_publish', '=', 1],
-            // ];
-            // //推荐的帖子
-            // if ($post['type'] == 2) {
-            //     $this->postService->orderBy = 'is_recommend DESC, id DESC';
-            // }
-            // $query = $this->postService->multiTableJoinQueryBuilder()->whereIn('id', $postIds);
-            // $count = $query->count();
-            // $pagination = $query->paginate((int)$limit, $this->select, 'page', (int)$page)->toArray();
-            // $pagination['data'] = Common::calculateList($page, $limit, $pagination['data']);
-            //
-            // foreach ($pagination['data'] as $key => &$value) {
-            //     $value['attach_urls'] = $value['attach_urls'] ? json_decode($value['attach_urls'], true) : [];
-            //     $value['relation_tags_list'] = explode(',', $value['relation_tags']);
-            // }
-            // $pagination['total'] = $count;
-            // return $pagination;
+            if (!isset($tagInfo['post_ids'])) {
+                return [];
+            }
+            $postIds = array_column($tagInfo['post_ids'], 'post_id');
+
+            $this->postService->condition = [
+                ['status', '=', 1],
+                ['is_publish', '=', 1],
+            ];
+            //推荐的帖子
+            if ($post['type'] == 2) {
+                $this->postService->orderBy = 'is_recommend DESC, id DESC';
+            }
+            $query = $this->postService->multiTableJoinQueryBuilder()->whereIn('id', $postIds);
+            $count = $query->count();
+            $pagination = $query->paginate((int) $limit, ['*'], 'page', (int) $page)->toArray();
+            foreach ($pagination['data'] as $key => &$value) {
+                $value['attach_urls'] = $value['attach_urls'] ? json_decode($value['attach_urls'], true) : [];
+                $value['relation_tags_list'] = explode(',', $value['relation_tags']);
+            }
+            $pagination['total'] = $count;
+            $pagination['data'] = Common::calculateList($page, $limit, $pagination['data']);
+            return $pagination;
 
         } catch (\Exception $e) {
-            throw new BusinessException((int)$e->getCode(), $e->getMessage());
+            throw new BusinessException((int) $e->getCode(), $e->getMessage());
         }
     }
 }

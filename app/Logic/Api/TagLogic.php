@@ -62,7 +62,12 @@ class TagLogic extends BaseLogic
     {
         $id = $request->input('id');
         $type = $request->input('type', 1);
+        $page = intval($request->input('page', 1));
+        $limit = intval($request->input('limit', 10));
+        $page < 1 && $page = 1;
+        $limit > 100 && $limit = 100;
         $post = compact('type');
-        return $this->service->postList($id, $post);
+
+        return $this->service->postList($id, $post, $page, $limit);
     }
 }
