@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin\V1;
 
-use App\Service\Admin\AttachmentService;
+use App\Logic\Admin\AttachmentLogic;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -21,9 +21,9 @@ class AttachmentController extends BaseController
 {
     /**
      * @Inject()
-     * @var AttachmentService
+     * @var AttachmentLogic
      */
-    public $service;
+    public $logic;
 
     /**
      * @RequestMapping(path="update", methods="post")
@@ -38,6 +38,16 @@ class AttachmentController extends BaseController
             'attach_url' => 'required',
             'status' => 'required',
         ]);
-        return $this->service->update($request);
+        return $this->logic->update($request);
+    }
+
+    /**
+     * @RequestMapping(path="upload", methods="post")
+     * @param RequestInterface $request
+     * @return int
+     */
+    public function upload(RequestInterface $request)
+    {
+        return $this->logic->upload($request);
     }
 }

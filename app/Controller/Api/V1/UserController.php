@@ -5,7 +5,7 @@ declare(strict_types=1);
  */
 namespace App\Controller\Api\V1;
 
-use App\Service\UserService;
+use App\Logic\Api\UserLogic;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Contract\RequestInterface;
 
@@ -13,9 +13,9 @@ class UserController extends BaseController
 {
     /**
      * @Inject()
-     * @var UserService
+     * @var UserLogic
      */
-    public $service;
+    public $logic;
 
     /**
      * 用户信息（查看别人）
@@ -24,7 +24,7 @@ class UserController extends BaseController
      */
     public function showSelf(RequestInterface $request)
     {
-        return $this->service->showSelf($request);
+        return $this->logic->showSelf($request);
     }
 
     /**
@@ -39,7 +39,7 @@ class UserController extends BaseController
             'type' => 'integer'
         ]);
 
-        return $this->service->postList($request);
+        return $this->logic->postList($request);
     }
 
     /**
@@ -49,7 +49,7 @@ class UserController extends BaseController
      */
     public function myFollowedUserList(RequestInterface $request)
     {
-        return $this->service->myFollowedUserList($request);
+        return $this->logic->myFollowedUserList($request);
     }
 
     /**
@@ -59,7 +59,7 @@ class UserController extends BaseController
      */
     public function myFollowedTagList(RequestInterface $request)
     {
-        return $this->service->myFollowedTagList($request);
+        return $this->logic->myFollowedTagList($request);
     }
 
     /**
@@ -73,6 +73,6 @@ class UserController extends BaseController
             'uid' => 'required|integer',
         ]);
 
-        return $this->service->follow($request);
+        return $this->logic->follow($request);
     }
 }

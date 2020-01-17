@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin\V1;
 
-use App\Service\Admin\PostService;
+use App\Logic\Admin\PostLogic;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -21,9 +21,9 @@ class PostController extends BaseController
 {
     /**
      * @Inject()
-     * @var PostService
+     * @var PostLogic
      */
-    public $service;
+    public $logic;
 
     /**
      * @RequestMapping(path="store", methods="post")
@@ -36,7 +36,7 @@ class PostController extends BaseController
             'post_content' => 'required',
             'link_url' => 'required',
         ]);
-        return $this->service->store($request);
+        return $this->logic->store($request);
     }
 
     /**
@@ -51,6 +51,6 @@ class PostController extends BaseController
             'post_content' => 'required',
             'link_url' => 'required',
         ]);
-        return $this->service->update($request);
+        return $this->logic->update($request);
     }
 }

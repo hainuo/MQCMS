@@ -6,9 +6,7 @@ declare(strict_types=1);
  */
 namespace App\Controller\Api\V1;
 
-use App\Service\AuthService;
-use App\Utils\JWT;
-use App\Utils\Redis;
+use App\Logic\Api\AuthLogic;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Contract\RequestInterface;
@@ -22,9 +20,9 @@ class AuthController extends BaseController
 {
     /**
      * @Inject()
-     * @var AuthService
+     * @var AuthLogic
      */
-    public $service;
+    public $logic;
 
     /**
      * 注册
@@ -34,24 +32,12 @@ class AuthController extends BaseController
      */
     public function register(RequestInterface $request)
     {
-        $post = $this->validateParam($request, [
+        $this->validateParam($request, [
             'user_name' => 'required',
             'password' => 'required|max:100|min:6'
         ]);
 
-        list($lastInsertId, $uuid) = $this->service->register($request);
-        $token = $this->createAuthToken(['id' => $lastInsertId, 'uuid' => $uuid], $request);
-
-        return $this->response->json([
-            'token' => $token,
-            'expire_time' => JWT::$leeway,
-            'uuid' => $lastInsertId,
-            'info' => [
-                'name' => $post['user_name'],
-                'avatar' => '',
-                'access' => []
-            ]
-        ]);
+        return $this->logic->register($request);
     }
 
     /**
@@ -66,14 +52,7 @@ class AuthController extends BaseController
             'password' => 'required|max:100|min:6'
         ]);
 
-        $userInfo = $this->service->login($request);
-        $token = $this->createAuthToken(['id' => $userInfo['id'], 'uuid' => $userInfo['uuid']], $request);
-        Redis::getContainer()->set('api:token:' . $userInfo['uuid'], $token);
-
-        return $this->response->json([
-            'token' => $token,
-            'expire_time' => JWT::$leeway
-        ]);
+        return $this->logic->login($request);
     }
 
     /**
@@ -86,6 +65,6 @@ class AuthController extends BaseController
         $this->validateParam($request, [
             'code' => 'required'
         ]);
-        return $this->service->miniProgram($request);
+        return $this->logic->miniProgram($request);
     }
 }

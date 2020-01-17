@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
-use App\Service\TagService;
+use App\Logic\Api\TagLogic;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Contract\RequestInterface;
 
@@ -15,9 +15,9 @@ class TagController extends BaseController
 {
     /**
      * @Inject()
-     * @var TagService
+     * @var TagLogic
      */
-    public $service;
+    public $logic;
 
     /**
      * 新增
@@ -30,7 +30,7 @@ class TagController extends BaseController
         $this->validateParam($request, [
             'tag_name' => 'required',
         ]);
-        return $this->service->store($request);
+        return $this->logic->store($request);
     }
 
     /**
@@ -45,7 +45,7 @@ class TagController extends BaseController
             'type' => 'integer'
         ]);
 
-        return $this->service->postList($request);
+        return $this->logic->postList($request);
     }
 
 }

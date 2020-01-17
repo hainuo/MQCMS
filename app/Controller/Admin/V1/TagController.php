@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin\V1;
 
-use App\Service\Admin\TagService;
+use App\Logic\Admin\TagLogic;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -22,9 +22,9 @@ class TagController extends BaseController
     /**
      *
      * @Inject()
-     * @var TagService
+     * @var TagLogic
      */
-    public $service;
+    public $logic;
 
     /**
      * @RequestMapping(path="store", methods="post")
@@ -38,7 +38,7 @@ class TagController extends BaseController
             'is_hot' => 'required|integer',
             'status' => 'required',
         ]);
-        return $this->service->store($request);
+        return $this->logic->store($request);
     }
 
     /**
@@ -52,6 +52,6 @@ class TagController extends BaseController
             'id' => 'required',
             'tag_name' => 'required'
         ]);
-        return $this->service->update($request);
+        return $this->logic->update($request);
     }
 }
