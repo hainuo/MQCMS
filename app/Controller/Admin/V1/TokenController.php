@@ -3,10 +3,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin\V1;
 
-use App\Service\Admin\UserService;
 use App\Utils\Common;
 use App\Utils\Redis;
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\AutoController;
 use Hyperf\HttpServer\Contract\RequestInterface;
 
@@ -18,20 +16,14 @@ use Hyperf\HttpServer\Contract\RequestInterface;
 class TokenController extends BaseController
 {
     /**
-     * @Inject()
-     * @var UserService
-     */
-    public $service;
-
-    /**
      * 获取token信息
      * @return array|bool|object|string
      */
     public function index(RequestInterface $request)
     {
         return [
-            'info' => $this->getTokenInfo(),
-            'token' => $this->getAuthToken(),
+            'info' => $this->logic->getTokenInfo(),
+            'token' => $this->logic->getAuthToken(),
             'uid' => $request->getAttribute('uid'),
             'uuid' => $request->getAttribute('uuid')
         ];
@@ -43,7 +35,7 @@ class TokenController extends BaseController
      */
     public function store(RequestInterface $request)
     {
-        $token = $this->createAuthToken([
+        $token = $this->logic->createAuthToken([
             'id' => 1,
             'uuid' => 123,
             'name' => 'mqcms',
@@ -56,14 +48,9 @@ class TokenController extends BaseController
 
         return [
             'token' => $token,
-            'jwt_config' => $this->getJwtConfig($request),
+            'jwt_config' => $this->logic->getJwtConfig($request),
             'uid' => $request->getAttribute('uid'),
             'uuid' => $request->getAttribute('uuid')
         ];
-    }
-
-    public function test(RequestInterface $request)
-    {
-        return $this->service->test($request);
     }
 }

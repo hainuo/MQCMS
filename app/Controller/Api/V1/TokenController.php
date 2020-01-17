@@ -20,8 +20,8 @@ class TokenController extends BaseController
     public function index(RequestInterface $request)
     {
         return [
-            'info' => $this->getTokenInfo(),
-            'token' => $this->getAuthToken(),
+            'info' => $this->logic->getTokenInfo(),
+            'token' => $this->logic->getAuthToken(),
             'uid' => $request->getAttribute('uid'),
             'uuid' => $request->getAttribute('uuid'),
         ];
@@ -33,7 +33,7 @@ class TokenController extends BaseController
      */
     public function store(RequestInterface $request)
     {
-        $token = $this->createAuthToken([
+        $token = $this->logic->createAuthToken([
             'id' => 1,
             'uuid' => 123,
             'name' => 'mqcms',
@@ -45,7 +45,7 @@ class TokenController extends BaseController
 
         return [
             'token' => $token,
-            'jwt_config' => $this->getJwtConfig($request),
+            'jwt_config' => $this->logic->getJwtConfig($request),
             'uid' => $request->getAttribute('uid'),
             'uuid' => $request->getAttribute('uuid'),
         ];
