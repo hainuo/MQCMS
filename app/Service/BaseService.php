@@ -130,15 +130,15 @@ class BaseService
      * @param RequestInterface $request
      * @return \Hyperf\Contract\PaginatorInterface|mixed
      */
-    public function index(RequestInterface $request)
+    public function index(int $page = 1, int $limit = 10, $search=[])
     {
         try {
-            $page = $request->input('page', 1);
-            $limit = $request->input('limit', 10);
-            $page < 1 && $page = 1;
-            $limit > 100 && $limit = 100;
+            // 搜索
+            if (!empty($search)) {
+                $this->multiSingleTableSearchCondition($search);
+            }
+            $pagination = $this->getListByPage($page, $limit);
 
-            $pagination = $this->getListByPage((int) $page, (int) $limit);
             foreach ($pagination['data'] as $key => &$value) {
                 isset($value['created_at']) && $value['created_at'] = date('Y-m-d H:i:s', (int) $value['created_at']);
                 isset($value['updated_at']) && $value['updated_at'] = date('Y-m-d H:i:s', (int) $value['updated_at']);
@@ -155,7 +155,7 @@ class BaseService
      * @param RequestInterface $request
      * @return \Hyperf\Database\Model\Model|\Hyperf\Database\Query\Builder|object|null
      */
-    public function show(RequestInterface $request)
+    public function show()
     {
         try {
             $info = $this->multiTableJoinQueryBuilder()->first();
@@ -177,7 +177,7 @@ class BaseService
      * @param RequestInterface $request
      * @return int
      */
-    public function delete(RequestInterface $request)
+    public function delete()
     {
         try {
             return $this->multiTableJoinQueryBuilder()->delete();
@@ -193,7 +193,7 @@ class BaseService
      * @param $data
      * @return int
      */
-    public function update(RequestInterface $request)
+    public function update()
     {
         try {
             $data = $this->data;
@@ -209,7 +209,7 @@ class BaseService
      * @param RequestInterface $request
      * @return int
      */
-    public function store(RequestInterface $request)
+    public function store()
     {
         try {
             $data = $this->data;
@@ -239,7 +239,7 @@ class BaseService
      * @param RequestInterface $request
      * @return bool
      */
-    public function insert(RequestInterface $request)
+    public function insert()
     {
         try {
             $data = $this->data;

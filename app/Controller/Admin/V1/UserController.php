@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin\V1;
 
-use App\Service\Admin\UserService;
+use App\Logic\Admin\UserLogic;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -21,9 +21,9 @@ class UserController extends BaseController
 {
     /**
      * @Inject()
-     * @var UserService
+     * @var UserLogic
      */
-    public $service;
+    public $logic;
 
     /**
      * @RequestMapping(path="store", methods="post")
@@ -37,7 +37,7 @@ class UserController extends BaseController
             'real_name' => 'required',
             'phone' => 'required',
         ]);
-        return $this->service->store($request);
+        return $this->logic->store($request);
     }
 
     /**
@@ -53,6 +53,6 @@ class UserController extends BaseController
             'real_name' => 'required',
             'phone' => 'required'
         ]);
-        return $this->service->update($request);
+        return $this->logic->update($request);
     }
 }

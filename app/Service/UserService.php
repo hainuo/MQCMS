@@ -19,15 +19,9 @@ class UserService extends BaseService
 
     /**
      * @Inject()
-     * @var UserInfoService
-     */
-    public $userInfoService;
-
-    /**
-     * @Inject()
      * @var PostService
      */
-    public $postService;
+    public  $postService;
 
     /**
      * @Inject()
@@ -65,25 +59,13 @@ class UserService extends BaseService
      * @param RequestInterface $request
      * @return \Hyperf\Contract\PaginatorInterface
      */
-    public function index(RequestInterface $request)
+    public function index(int $page = 1, int $limit = 10, $search = [])
     {
         try {
-            $model = $this->model->getTable();
-            $userInfoTable = $this->userInfoService->model->getTable();
-
-            $this->select = [
-                $model => ['id', 'created_at', 'updated_at', 'user_name', 'nick_name', 'real_name', 'phone', 'avatar'],
-                $userInfoTable => ['intro', 'like_num', 'follow_num', 'fans_num', 'post_num', 'my_like_num'],
-            ];
-            $this->condition = [
-                [$model . '.status', '=', 1]
-            ];
-            $this->joinTables = [
-                $userInfoTable => [
-                    $model . '.id', '=', $userInfoTable . '.user_id'
-                ]
-            ];
-            return parent::index($request);
+            $this->select = ['id', 'created_at', 'updated_at', 'user_name', 'nick_name', 'real_name', 'phone', 'avatar'];
+            $this->with = ['userInfo' => ['user_id', 'intro', 'like_num', 'follow_num', 'fans_num', 'post_num', 'my_like_num']];
+            $this->condition = ['status' => 1];
+            return parent::index($page, $limit, $search);
 
         } catch (\Exception $e) {
             throw new BusinessException((int)$e->getCode(), $e->getMessage());
@@ -95,26 +77,16 @@ class UserService extends BaseService
      * @param RequestInterface $request
      * @return mixed
      */
-    public function show(RequestInterface $request)
+    public function profile($uid, $id)
     {
         try {
-            $uid = $request->getAttribute('uid', 0);
-            $id = $request->input('id');
-            $model = $this->model->getTable();
-            $userInfoTable = $this->userInfoService->model->getTable();
-
-            $this->select = [
-                $model => ['id', 'user_name', 'nick_name', 'real_name', 'phone', 'avatar'],
-                $userInfoTable => ['intro', 'like_num', 'follow_num', 'fans_num', 'post_num', 'my_like_num'],
-            ];
+            $this->with = ['userInfo' => ['user_id', 'intro', 'like_num', 'follow_num', 'fans_num', 'post_num', 'my_like_num']];
             $this->condition = [
-                [$model . '.status', '=', 1],
-                [$model . '.id', '=', $id],
+                ['status', '=', 1],
+                ['id', '=', $id]
             ];
-            $this->joinTables = [
-                $userInfoTable => [$model . '.id', '=', $userInfoTable . '.user_id']
-            ];
-            $data = parent::show($request);
+            $this->select = ['id', 'user_name', 'nick_name', 'real_name', 'phone', 'avatar'];
+            $data = parent::show();
 
             $data['is_follow'] = 0;
             if ($uid) {
@@ -140,26 +112,16 @@ class UserService extends BaseService
      * @param RequestInterface $request
      * @return mixed
      */
-    public function showSelf(RequestInterface $request)
+    public function showSelf($uid)
     {
         try {
-            $uid = $request->getAttribute('uid', 0);
-            $model = $this->model->getTable();
-            $userInfoTable = $this->userInfoService->model->getTable();
-
-            $this->select = [
-                $model => ['id', 'user_name', 'real_name', 'phone', 'avatar', 'intro'],
-                $userInfoTable => ['like_num', 'follow_num', 'fans_num', 'post_num', 'my_like_num'],
-            ];
+            $this->with = ['userInfo' => ['user_id', 'intro', 'like_num', 'follow_num', 'fans_num', 'post_num', 'my_like_num']];
             $this->condition = [
-                [$model . '.status', '=', 1],
-                [$model . '.id', '=', $uid],
+                ['status', '=', 1],
+                ['id', '=', $uid]
             ];
-            $this->joinTables = [
-                $userInfoTable => [$model . '.id', '=', $userInfoTable . '.user_id']
-            ];
-
-            $data = parent::show($request);
+            $this->select = ['id', 'user_name', 'nick_name', 'real_name', 'phone', 'avatar'];
+            $data = parent::show();
             return $data ?? [];
 
         } catch (\Exception $e) {
@@ -173,42 +135,35 @@ class UserService extends BaseService
      * @param RequestInterface $request
      * @return mixed
      */
-    public function postList(RequestInterface $request)
+    public function postList($post, $page, $limit)
     {
         try {
-            $id = $request->input('id');
-            $type = $request->input('type', 1);
-            $page = $request->input('page', 1);
-            $limit = $request->input('limit', 10);
-            $page < 1 && $page = 1;
-            $limit > 100 && $limit = 100;
-
             $this->postService->condition = [
                 ['status', '=', 1],
                 ['is_publish', '=', 1],
             ];
             $postIds = [];
-            switch ($type) {
+            switch ($post['type']) {
                 //用户发布的帖子列表
                 case 1:
-                    $this->postService->condition[] = ['user_id', '=', $id];
+                    $this->postService->condition[] = ['user_id', '=', $post['id']];
                     break;
 
                 //用户点赞的帖子列表
                 case 2:
-                    $this->userLikeService->condition = ['user_id' => $id];
+                    $this->userLikeService->condition = ['user_id' => $post['id']];
                     $postIds = $this->userLikeService->multiTableJoinQueryBuilder()->pluck('post_id')->toArray();
                     break;
 
                 //用户收藏的帖子列表
                 case 3:
-                    $this->userFavoriteService->condition = ['user_id' => $id];
+                    $this->userFavoriteService->condition = ['user_id' => $post['id']];
                     $postIds = $this->userFavoriteService->multiTableJoinQueryBuilder()->pluck('post_id')->toArray();
                     break;
 
                 //用户发布且含有商品的帖子列表
                 case 4:
-                    $this->postService->condition[] = ['user_id', '=', $id];
+                    $this->postService->condition[] = ['user_id', '=', $post['id']];
                     $this->postService->condition[] = ['is_good', '=', 1];
                     break;
 
@@ -217,7 +172,8 @@ class UserService extends BaseService
                     break;
             }
             $query = $this->postService->multiTableJoinQueryBuilder();
-            if (in_array($type, [2, 3])) {
+
+            if (in_array($post['type'], [2, 3])) {
                 $query = $query->whereIn('id', $postIds);
             }
             $count = $query->count();
@@ -240,24 +196,21 @@ class UserService extends BaseService
      * @param RequestInterface $request
      * @return mixed
      */
-    public function myFollowedUserList(RequestInterface $request)
+    public function myFollowedUserList($uid, $page, $limit)
     {
         try {
-            $page = $request->input('page', 1);
-            $limit = $request->input('limit', 10);
-            $page < 1 && $page = 1;
-            $limit > 100 && $limit = 100;
-            $uid = $request->getAttribute('uid');
-
             $this->userFollowService->condition = ['user_id' => $uid];
             $ids = $this->userFollowService->multiTableJoinQueryBuilder()->pluck('be_user_id')->toArray();
-            $this->select = ['id', 'user_name', 'nick_name', 'avatar'];
+            $select = ['id', 'user_name', 'nick_name', 'avatar'];
+            $this->select = $select;
             $this->condition = [
                 ['status', '=', 1],
             ];
-            $query = $this->multiTableJoinQueryBuilder()->whereIn('id', $ids);
+            if (!empty($ids)) {
+                $query = $this->multiTableJoinQueryBuilder()->whereIn('id', $ids);
+            }
             $count = $query->count();
-            $pagination = $query->paginate((int)$limit, $this->select, 'page', (int)$page)->toArray();
+            $pagination = $query->paginate((int)$limit, $select, 'page', (int)$page)->toArray();
             $pagination['total'] = $count;
             return $pagination;
 
@@ -271,24 +224,19 @@ class UserService extends BaseService
      * @param RequestInterface $request
      * @return mixed
      */
-    public function myFollowedTagList(RequestInterface $request)
+    public function myFollowedTagList($uid, $page, $limit)
     {
         try {
-            $page = $request->input('page', 1);
-            $limit = $request->input('limit', 10);
-            $page < 1 && $page = 1;
-            $limit > 100 && $limit = 100;
-            $uid = $request->getAttribute('uid');
-
             $this->userTagService->condition = ['user_id' => $uid];
             $ids = $this->userTagService->multiTableJoinQueryBuilder()->pluck('tag_id')->toArray();
-            $this->select = ['id', 'tag_name'];
+            $select = ['id', 'tag_name'];
+            $this->select = $select;
             $this->condition = [
                 ['status', '=', 1],
             ];
             $query = $this->tagService->multiTableJoinQueryBuilder()->whereIn('id', $ids);
             $count = $query->count();
-            $pagination = $query->paginate((int)$limit, $this->select, 'page', (int)$page)->toArray();
+            $pagination = $query->paginate((int)$limit, $select, 'page', (int)$page)->toArray();
             $pagination['total'] = $count;
             return $pagination;
 

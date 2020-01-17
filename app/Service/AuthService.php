@@ -5,7 +5,7 @@ namespace App\Service;
 
 use App\Constants\ErrorCode;
 use App\Exception\BusinessException;
-use App\Model\User;
+use App\Model\Entity\User;
 use App\Pool\HttpClient;
 use App\Utils\Common;
 use Hyperf\DbConnection\Db;
@@ -34,19 +34,15 @@ class AuthService extends BaseService
 
     /**
      * 注册
-     * @param RequestInterface $request
-     * @return int
+     * @param $post
+     * @return array
      * @throws \Exception
      */
-    public function register(RequestInterface $request)
+    public function register($post)
     {
-        $userName = trim($request->input('user_name'));
-        $password = trim($request->input('password'));
-        $ip = $request->getServerParams()['remote_addr'];
-
         $this->select = ['id', 'status', 'avatar'];
-        $this->condition = ['user_name' => $userName];
-        $userInfo = parent::show($request);
+        $this->condition = ['user_name' => $post['userName']];
+        $userInfo = parent::show();
 
         if ($userInfo) {
             if ($userInfo['status'] == 0) {
@@ -58,27 +54,27 @@ class AuthService extends BaseService
         $salt = Common::generateSalt();
         $uuid = Common::generateSnowId();
         $this->data = [
-            'uuid' => $uuid,
-            'user_name' => $userName,
-            'real_name' => '',
-            'nick_name' => $userName . generate_random_string(6),
-            'phone' => '',
-            'avatar' => '',
-            'password' => Common::generatePasswordHash($password, $salt),
-            'salt' => $salt,
-            'status' => 1,
+            'uuid'          => $uuid,
+            'user_name'     => $post['userName'],
+            'real_name'     => '',
+            'nick_name'     => $post['userName'] . generate_random_string(6),
+            'phone'         => '',
+            'avatar'        => '',
+            'password'      => Common::generatePasswordHash($post['password'], $salt),
+            'salt'          => $salt,
+            'status'        => 1,
             'register_time' => time(),
-            'register_ip' => $ip,
-            'login_time' => time(),
-            'login_ip' => $ip,
+            'register_ip'   => $post['ip'],
+            'login_time'    => time(),
+            'login_ip'      => $post['ip'],
         ];
         Db::beginTransaction();
         try {
-            $lastInsertId = parent::store($request);
+            $lastInsertId = parent::store();
             $this->userInfoService->data = [
                 'user_id' => $lastInsertId,
             ];
-            $this->userInfoService->store($request);
+            $this->userInfoService->store();
             Db::commit();
             return [$lastInsertId, $uuid];
 
@@ -90,32 +86,28 @@ class AuthService extends BaseService
 
     /**
      * 登录
-     * @param RequestInterface $request
+     * @param $post
      * @return \Hyperf\Database\Model\Model|\Hyperf\Database\Query\Builder|object|null
      */
-    public function login(RequestInterface $request)
+    public function login($post)
     {
-        $userName = trim($request->input('user_name'));
-        $password = trim($request->input('password'));
-
-        $this->select = ['id', 'uuid', 'salt', 'password'];
-        $this->condition = ['status' => 1, 'user_name' => $userName];
-        $userInfo = parent::show($request);
+        $this->select = ['id', 'uuid', 'salt', 'avatar', 'password'];
+        $this->condition = ['status' => 1, 'user_name' => $post['userName']];
+        $userInfo = parent::show();
 
         if (!$userInfo) {
             throw new BusinessException(ErrorCode::BAD_REQUEST, '用户不存在');
         }
 
-        if ($userInfo['password'] != Common::generatePasswordHash($password, $userInfo['salt'])) {
+        if ($userInfo['password'] != Common::generatePasswordHash($post['password'], $userInfo['salt'])) {
             throw new BusinessException(ErrorCode::BAD_REQUEST, '密码不正确');
         }
-        $ip = $request->getServerParams()['remote_addr'];
         $this->data = [
-            'login_ip' => $ip,
+            'login_ip' => $post['ip'],
             'login_time' => time()
         ];
         $this->condition = ['id' => $userInfo['id']];
-        if (!parent::update($request)) {
+        if (!parent::update()) {
             throw new BusinessException(ErrorCode::BAD_REQUEST, '登录失败');
         }
         return $userInfo;

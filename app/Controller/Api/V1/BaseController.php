@@ -1,17 +1,23 @@
 <?php
 declare(strict_types=1);
 
+/**
+ * 基类
+ */
 namespace App\Controller\Api\V1;
 
 use App\Controller\AbstractController;
-use App\Service\BaseService;
+use App\Logic\Api\BaseLogic;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
+use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Contract\RequestInterface;
+use App\Middleware\AuthMiddleware;
 
 /**
  * @Controller()
+ * @Middleware(AuthMiddleware::class)
  * Class BaseController
  * @package App\Controller\Api\V1
  */
@@ -19,9 +25,9 @@ class BaseController extends AbstractController
 {
     /**
      * @Inject()
-     * @var BaseService
+     * @var BaseLogic
      */
-    public $service;
+    public $logic;
 
     /**
      * @RequestMapping(path="index", methods="get, post")
@@ -30,7 +36,7 @@ class BaseController extends AbstractController
      */
     public function index(RequestInterface $request)
     {
-        return $this->service->index($request);
+        return $this->logic->index($request);
     }
 
     /**
@@ -40,7 +46,7 @@ class BaseController extends AbstractController
      */
     public function store(RequestInterface $request)
     {
-        return $this->service->store($request);
+        return $this->logic->store($request);
     }
 
     /**
@@ -50,7 +56,7 @@ class BaseController extends AbstractController
      */
     public function update(RequestInterface $request)
     {
-        return $this->service->update($request);
+        return $this->logic->update($request);
     }
 
     /**
@@ -63,7 +69,7 @@ class BaseController extends AbstractController
         $this->validateParam($request, [
             'id' => 'required|integer',
         ]);
-        return $this->service->delete($request);
+        return $this->logic->delete($request);
     }
 
     /**
@@ -76,6 +82,6 @@ class BaseController extends AbstractController
         $this->validateParam($request, [
             'id' => 'required|integer'
         ]);
-        return $this->service->show($request);
+        return $this->logic->show($request);
     }
 }

@@ -15,12 +15,10 @@ class Common
      * @param array $data
      * @return array
      */
-    public static function calculateList(RequestInterface $request, array $data)
+    public static function calculateList($page, $limit, array $data)
     {
-        $page = $request->input('page', 1);
-        $limit = $request->input('limit', 9);
-        $page = $page < 1 ? 1 : $page;
-        $limit = $limit > 100 ? 100 : $limit;
+        $page < 1 && $page = 1;
+        $limit > 100 && $limit = 100;
 
         $multiple = (($limit / 3) - 1) / 2; // limit的数量 9 15 21 27...
         $suffix = $page % 2 === 0 ? 3 : 5;

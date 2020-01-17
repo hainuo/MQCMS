@@ -9,7 +9,6 @@ use App\Model\Entity\Admin;
 use App\Service\BaseService;
 use App\Utils\Common;
 use Hyperf\Di\Annotation\Inject;
-use Hyperf\HttpServer\Contract\RequestInterface;
 
 class AuthService extends BaseService
 {
@@ -21,20 +20,18 @@ class AuthService extends BaseService
 
     /**
      * 注册
-     * @param RequestInterface $request
-     * @return int
+     * @param $account
+     * @param $phone
+     * @param $password
+     * @param $ip
+     * @return array
      * @throws \Exception
      */
-    public function register(RequestInterface $request)
+    public function register($account, $phone, $password, $ip)
     {
-        $account = $request->input('account');
-        $phone = $request->input('phone');
-        $password = $request->input('password');
-        $ip = $request->getServerParams()['remote_addr'];
-
         $this->select = ['id', 'status', 'avatar'];
         $this->condition = ['account' => $account];
-        $adminInfo = parent::show($request);
+        $adminInfo = parent::show();
 
         if ($adminInfo) {
             if ($adminInfo['status'] == 0) {
@@ -59,7 +56,7 @@ class AuthService extends BaseService
             'login_time' => time(),
             'login_ip' => $ip
         ];
-        $lastInsertId = parent::store($request);
+        $lastInsertId = parent::store();
 
         if (!$lastInsertId) {
             throw new BusinessException(ErrorCode::BAD_REQUEST, '注册失败');
@@ -69,17 +66,15 @@ class AuthService extends BaseService
 
     /**
      * 登录
-     * @param RequestInterface $request
+     * @param $account
+     * @param $password
      * @return \Hyperf\Database\Model\Model|\Hyperf\Database\Query\Builder|object|null
      */
-    public function login(RequestInterface $request)
+    public function login($account, $password)
     {
-        $account = trim($request->input('account'));
-        $password = trim($request->input('password'));
-
         $this->select = ['id', 'uuid', 'salt', 'avatar', 'password'];
         $this->condition = ['status' => 1, 'account' => $account];
-        $adminInfo = parent::show($request);
+        $adminInfo = parent::show();
 
         if (empty($adminInfo)) {
             throw new BusinessException(ErrorCode::BAD_REQUEST, '账号不存在或被限制登录');

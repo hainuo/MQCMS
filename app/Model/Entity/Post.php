@@ -11,4 +11,9 @@ class Post extends \App\Model\Post
     {
         return $this->hasMany(TagPostRelation::class, 'post_id', 'id');
     }
+
+    public function userInfo()
+    {
+        return $this->hasOne(User::class, 'id', 'user_id');
+    }
 }

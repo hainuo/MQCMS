@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace App\Service;
 
 use App\Exception\BusinessException;
-use App\Model\Post;
+use App\Model\Entity\Post;
 use App\Utils\Common;
 use Hyperf\DbConnection\Db;
 use Hyperf\Di\Annotation\Inject;
@@ -47,74 +47,54 @@ class PostService extends BaseService
      * @param RequestInterface $request
      * @return mixed
      */
-    public function index(RequestInterface $request)
+    public function getList(int $page, int $limit, $search=[], $post=[])
     {
-        // 类型： recommend: 推荐 default: 默认
-        $type = trim($request->input('type', 'default'));
-
         $this->condition = [
             ['status', '=', 1],
             ['is_publish', '=', 1],
         ];
-        if ($type === 'recommend') {
+        if ($post['type'] === 'recommend') {
             $this->condition[] = ['is_recommend', '=', 1];
         }
-        $list = parent::index($request);
+        $list = parent::index($page, $limit, $search);
 
         foreach ($list['data'] as $key => &$value) {
             $value['attach_urls'] = $value['attach_urls'] ? json_decode($value['attach_urls'], true) : [];
             $value['relation_tags_list'] = explode(',', $value['relation_tags']);
         }
-        $list['data'] = Common::calculateList($request, $list['data']);
+        $list['data'] = Common::calculateList($page, $limit, $list['data']);
         return $list;
     }
 
     /**
-     * 新增
-     * @param RequestInterface $request
-     * @return mixed
+     * 发帖
+     * @param $post
+     * @param $data
+     * @return int
      */
-    public function store(RequestInterface $request)
+    public function publish($post, $data)
     {
-        $relationTagIds = explode(',', $request->input('relation_tag_ids', ''));
-        $uid = $request->getAttribute('uid', 0);
-        $isPublish = trim($request->input('is_publish', 1));
-        $this->data = [
-            'user_id'       => $uid,
-            'post_content'  => trim($request->input('post_content')),
-            'link_url'      => trim($request->input('link_url', '')),
-            'label_type'    => trim($request->input('label_type', 1)),
-            'is_good'       => $request->has('link_url') ? 1 : 0,
-            'relation_tags' => trim($request->input('relation_tags', '')),
-            'address'       => trim($request->input('address', '')),
-            'addr_lat'      => trim($request->input('addr_lat', '')),
-            'addr_lng'      => trim($request->input('addr_lng', '')),
-            'attach_urls'   => trim($request->input('attach_urls', '')),
-            'attach_ids'    => trim($request->input('attach_ids', '')),
-            'is_publish'    => $isPublish,
-            'created_at'    => time(),
-            'updated_at'    => time(),
-        ];
+        $this->data = $data;
         Db::beginTransaction();
         try {
-            $lastInsertId = parent::store($request);
+            $lastInsertId = parent::store();
 
             // 存储tag
-            if ($request->has('relation_tag_ids') && $request->has('relation_tags')) {
-                foreach ($relationTagIds as $value) {
+            if (!empty($post['relationTagIds'])) {
+                foreach ($post['relationTagIds'] as $value) {
                     // todo
                     $this->tagPostRelationService->data = [
-                        'user_id' => $uid,
+                        'user_id' => $post['uid'],
                         'tag_id' => $value,
                         'post_id' => $lastInsertId,
                         'created_at' => time(),
                         'updated_at' => time()
                     ];
                 }
-                $this->tagPostRelationService->insert($request);
+                $this->tagPostRelationService->insert();
             }
             //更新我的发帖数
-            $this->userInfoService->condition = ['user_id' => $uid];
+            $this->userInfoService->condition = ['user_id' => $post['uid']];
             $this->userInfoService->multiTableJoinQueryBuilder()->increment('post_num');
 
             Db::commit();
@@ -122,7 +102,7 @@ class PostService extends BaseService
 
         } catch (\Exception $e) {
             Db::rollBack();
-            $message = $isPublish ? '发布失败' : '保存失败';
+            $message = $post['isPublish'] ? '发布失败' : '保存失败';
             throw new BusinessException((int)$e->getCode(), $message);
         }
     }
@@ -132,11 +112,9 @@ class PostService extends BaseService
      * @param RequestInterface $request
      * @return mixed
      */
-    public function like(RequestInterface $request)
+    public function like($uid, $id)
     {
         try {
-            $uid = $request->getAttribute('uid');
-            $id = $request->input('id');
             $this->userLikeService->data = [
                 'user_id' => $uid,
                 'post_id' => $id,
@@ -151,7 +129,7 @@ class PostService extends BaseService
             Db::beginTransaction();
 
             // 插入
-            $this->userLikeService->insert($request);
+            $this->userLikeService->insert();
 
             //更新帖子点赞数 +1
             $this->multiTableJoinQueryBuilder()->increment('like_total');
@@ -176,12 +154,9 @@ class PostService extends BaseService
      * @param RequestInterface $request
      * @return mixed
      */
-    public function cancelLike(RequestInterface $request)
+    public function cancelLike($uid, $id)
     {
         try {
-            $uid = $request->getAttribute('uid');
-            $id = $request->input('id');
-
             // 获取userId
             $userId = $this->multiTableJoinQueryBuilder()->value('user_id');
 
@@ -191,7 +166,7 @@ class PostService extends BaseService
                 ['post_id' => $id],
             ];
             // 删除帖子点赞
-            $this->userLikeService->delete($request);
+            $this->userLikeService->delete();
 
             //更新帖子点赞数 -1
             $this->condition = ['id' => $id];
@@ -217,23 +192,20 @@ class PostService extends BaseService
      * @param RequestInterface $request
      * @return mixed
      */
-    public function favorite(RequestInterface $request)
+    public function favorite($uid, $id)
     {
         try {
-            $uid = $request->getAttribute('uid');
-            $id = $request->input('id');
             $this->userFavoriteService->condition = [
                 'user_id' => $uid,
                 'post_id' => $id,
-                'created_at' => time(),
-                'updated_at' => time(),
             ];
             Db::beginTransaction();
 
-            $this->userFavoriteService->insert($request);
+            $this->userFavoriteService->store();
+
             //更新帖子收藏数 +1
             $this->condition = ['id' => $id];
-            Db::table($this->model->getTable())->where($this->condition)->increment('favorite_total');
+            $this->multiTableJoinQueryBuilder()->increment('favorite_total');
 
             Db::commit();
             return true;
@@ -249,21 +221,20 @@ class PostService extends BaseService
      * @param RequestInterface $request
      * @return mixed
      */
-    public function cancelFavorite(RequestInterface $request)
+    public function cancelFavorite($uid, $id)
     {
         try {
-            $uid = $request->getAttribute('uid');
-            $id = $request->input('id');
             $this->userFavoriteService->data = [
                 ['user_id' => $uid],
                 ['post_id' => $id],
             ];
             Db::beginTransaction();
 
-            $this->userFavoriteService->delete($request);
+            $this->userFavoriteService->delete();
+
             //更新帖子收藏数 -1
             $this->condition = ['id' => $id];
-            Db::table($this->model->getTable())->where($this->condition)->decrement('favorite_total');
+            $this->multiTableJoinQueryBuilder()->decrement('favorite_total');
 
             Db::commit();
             return true;
