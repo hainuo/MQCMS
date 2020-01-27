@@ -12,7 +12,7 @@
  * If you want to clean the /runtime/container cache, enter: php watch -c
  * 如果你想要清除/runtime/container缓存，则输入：php watch -c
  */
-
+date_default_timezone_set('Asia/Shanghai');
 # PHP Bin File PHP程序所在路径（默认自动获取）
 const PHP_BIN_FILE = 'which php';
 # Watch Dir 监听目录（默认监听脚本所在的根目录）
