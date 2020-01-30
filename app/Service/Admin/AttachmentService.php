@@ -46,4 +46,24 @@ class AttachmentService extends BaseService
         $data['attach_full_url'] = env('APP_UPLOAD_HOST_URL', '') . $data['attach_url'];
         return $data;
     }
+
+    /**
+     * @return int
+     */
+    public function delete()
+    {
+        // 删除资源
+        $condition = $this->condition;
+        $fileInfo = parent::show();
+        if (empty($fileInfo)) {
+            throw new BusinessException(ErrorCode::BAD_REQUEST, '资源不存在');
+        }
+        $attachUrl = $fileInfo['attach_url'];
+        $fullAttachUrl = BASE_PATH . DIRECTORY_SEPARATOR . $attachUrl;
+        if (file_exists($fullAttachUrl)) {
+            @unlink($fullAttachUrl);
+        }
+        $this->condition = $condition;
+        return parent::delete();
+    }
 }

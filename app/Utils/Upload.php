@@ -52,7 +52,7 @@ class Upload
     /**
      * @var array
      */
-    public $limitType = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'mp4', 'avi'];
+    public $limitType = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'mp4', 'avi', 'mov', 'rmvb'];
 
     /**
      * @var string
@@ -86,20 +86,26 @@ class Upload
         if (!$request->hasFile($this->name)) {
             throw new BusinessException(ErrorCode::BAD_REQUEST, '上传文件名称不存在');
         }
-        $filePath = $this->uploadPath . DIRECTORY_SEPARATOR . date('Y') . DIRECTORY_SEPARATOR . date('m') . DIRECTORY_SEPARATOR . date('d') . DIRECTORY_SEPARATOR;
-        $res = Common::mkDir(BASE_PATH . DIRECTORY_SEPARATOR . $filePath);
-        if (!$res) {
-            throw new BusinessException(ErrorCode::UNAUTHORIZED, '资源文件夹创建失败，请检查目录权限');
+        if (!$request->file($this->name)->isValid()) {
+            throw new BusinessException(ErrorCode::UNAUTHORIZED, '上传的文件不是有效文件');
         }
+
         $this->fileInfo = $request->file($this->name)->toArray();
         $this->mineType = $request->file($this->name)->getMimeType();
         $this->extension = $request->file($this->name)->getExtension();
 
+        if ($this->fileInfo['size'] > $this->limitSize) {
+            $mSize = $this->limitSize / 1024 / 1024;
+            throw new BusinessException(ErrorCode::UNAUTHORIZED, '文件上传大小不能超过' . $mSize . 'MB');
+        }
         if (!in_array($this->extension, $this->limitType)) {
             throw new BusinessException(ErrorCode::UNAUTHORIZED, '文件上传格式不支持，支持格式：' . implode(', ', $this->limitType));
         }
-        if ($this->fileInfo['size'] > $this->limitSize) {
-            throw new BusinessException(ErrorCode::UNAUTHORIZED, '文件上传大小不能超过10M');
+
+        $filePath = $this->uploadPath . DIRECTORY_SEPARATOR . date('Y') . DIRECTORY_SEPARATOR . date('m') . DIRECTORY_SEPARATOR . date('d') . DIRECTORY_SEPARATOR;
+        $res = Common::mkDir(BASE_PATH . DIRECTORY_SEPARATOR . $filePath);
+        if (!$res) {
+            throw new BusinessException(ErrorCode::UNAUTHORIZED, '资源文件夹创建失败，请检查目录权限');
         }
         $fileName = Common::generateUniqid();
         $fileUrl = $filePath . $fileName . '.' . $this->extension;
@@ -112,7 +118,7 @@ class Upload
 
         return [
             'name' => $fileName,
-            'fullpath' => $fileUrl,
+            'fullpath' => env('APP_UPLOAD_HOST_URL', '') . $fileUrl,
             'path' => $fileUrl
         ];
     }
