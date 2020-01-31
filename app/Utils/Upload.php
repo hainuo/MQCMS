@@ -52,7 +52,7 @@ class Upload
     /**
      * @var array
      */
-    public $limitType = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'mp4', 'avi', 'mov', 'rmvb'];
+    public $limitType = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'mp4', 'avi', 'rmvb'];
 
     /**
      * @var string

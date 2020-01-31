@@ -29,7 +29,7 @@ class AttachmentLogic extends BaseLogic
         if (in_array($upload->extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp'])) {
             $attachType = 1;
 
-        } else if (in_array($upload->extension, ['mp4', 'avi', 'rmvb', 'mov'])) {
+        } else if (in_array($upload->extension, ['mp4', 'avi', 'rmvb'])) {
             $attachType = 2;
 
         } else {
