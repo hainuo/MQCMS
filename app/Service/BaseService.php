@@ -374,9 +374,9 @@ class BaseService
             throw new BusinessException(ErrorCode::SERVER_ERROR);
         }
         $searchForm = is_array($searchForm) ? $searchForm : json_decode($searchForm, true);
-        $type = isset($searchForm['type']) ? $searchForm['type'] : '';
-        $keyword = isset($searchForm['keyword']) ? trim($searchForm['keyword']) : '';
-        $timeForm = isset($searchForm['time']) ? $searchForm['time'] : [];
+        $type = isset($searchForm['_type']) ? $searchForm['_type'] : '';
+        $keyword = isset($searchForm['_keyword']) ? trim($searchForm['_keyword']) : '';
+        $timeForm = isset($searchForm['_time']) ? $searchForm['_time'] : [];
         $condition = $this->condition;
         $tableAttributes = $this->model->getFillable();
 

@@ -55,4 +55,17 @@ class AdminController extends BaseController
         ]);
         return $this->logic->store($request);
     }
+
+    /**
+     * @RequestMapping(path="module", methods="get")
+     * @param RequestInterface $request
+     * @return int
+     */
+    public function module(RequestInterface $request)
+    {
+        $this->validateParam($request, [
+           'module' => 'required'
+        ]);
+        return $this->logic->module($request);
+    }
 }

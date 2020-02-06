@@ -3,7 +3,10 @@ declare(strict_types=1);
 
 namespace App\Service\Admin;
 
+use App\Constants\ErrorCode;
+use App\Exception\BusinessException;
 use App\Model\Entity\Admin;
+use App\Model\Model;
 use App\Service\BaseService;
 use Hyperf\Di\Annotation\Inject;
 
@@ -30,5 +33,28 @@ class AdminService extends BaseService
             $value['login_time'] = $value['login_time'] ? date('Y-m-d H:i:s', (int)$value['login_time']) : '';
         }
         return $data;
+    }
+
+    /**
+     * @param $module
+     * @return mixed
+     */
+    public function getModuleTbleList($module)
+    {
+        try {
+            $moduleClass = 'App\\Model\\' . ucfirst($module);
+            $reflectionClass = new \ReflectionClass($moduleClass);
+            if (!$reflectionClass->isInstantiable()) {
+                throw new BusinessException(ErrorCode::BAD_REQUEST, '当前类不可实例化');
+            }
+            $model = new $moduleClass();
+            if (!($model instanceof Model)) {
+                throw new BusinessException(ErrorCode::SERVER_ERROR);
+            }
+            return $model->getFillable();
+
+        } catch (\Exception $e) {
+            throw new BusinessException(ErrorCode::BAD_REQUEST, $e->getMessage());
+        }
     }
 }

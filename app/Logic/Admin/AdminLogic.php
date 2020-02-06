@@ -61,4 +61,14 @@ class AdminLogic extends BaseLogic
         ];
         return $this->service->store();
     }
+
+    /**
+     * @param RequestInterface $request
+     * @return mixed
+     */
+    public function module(RequestInterface $request)
+    {
+        $module = $request->input('module');
+        return $this->service->getModuleTbleList($module);
+    }
 }
