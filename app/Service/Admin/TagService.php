@@ -40,12 +40,7 @@ class TagService extends BaseService
     {
         try {
             $this->select = ['id', 'tag_name', 'is_hot', 'tag_type', 'used_count'];
-            $this->condition = [
-                ['id', '=', $id],
-                ['status', '=', 1],
-            ];
-            $data = parent::show();
-
+            $data = parent::showFromCache($id);
             $data['is_follow'] = 0;
             if ($uid) {
                 // 查询是否关注

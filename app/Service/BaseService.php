@@ -173,6 +173,31 @@ class BaseService
     }
 
     /**
+     * 从缓存中获取详情
+     * @param $id
+     * @return array
+     */
+    public function showFromCache($id)
+    {
+        try {
+            if (!$this->model || !($this->model instanceof Model)) {
+                throw new BusinessException(ErrorCode::SERVER_ERROR);
+            }
+            $info = $this->model::findFromCache($id);
+            if (!$info) {
+                return [];
+            }
+            $data = $info->toArray();
+            isset($info->created_at) && $data['created_at'] = $info->created_at instanceof Carbon ? $info->created_at->toDateTimeString() : date('Y-m-d H:i:s', $info->created_at);
+            isset($info->updated_at) && $data['updated_at'] = $info->updated_at instanceof Carbon ? $info->updated_at->toDateTimeString() : date('Y-m-d H:i:s', $info->updated_at);
+            return $data;
+
+        } catch (\Exception $e) {
+            throw new BusinessException((int)$e->getCode(), $e->getMessage());
+        }
+    }
+
+    /**
      * 删除
      * @param RequestInterface $request
      * @return int
@@ -288,7 +313,7 @@ class BaseService
         if (!$this->model || !($this->model instanceof Model)) {
             throw new BusinessException(ErrorCode::SERVER_ERROR);
         }
-        $query = $this->model::query();
+        $query = $this->model::query(true); // true $cache Whether to delete the model cache when batch update
 
         if (!empty($this->with)) {
             $arrCount = Common::getArrCountRecursive($this->with);
