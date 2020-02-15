@@ -24,6 +24,7 @@ class TokenController extends BaseController
             'token' => $this->logic->getAuthToken(),
             'uid' => $request->getAttribute('uid'),
             'uuid' => $request->getAttribute('uuid'),
+            'current_action' => Common::getCurrentActionName($request, $this)
         ];
     }
 
@@ -38,9 +39,10 @@ class TokenController extends BaseController
             'uuid' => 123,
             'name' => 'mqcms',
             'url' => 'http://www.mqcms.net',
-            'from' => Common::getCurrentPath($request),
-            'action' => Common::getCurrentActionName($request, get_class_methods(get_class($this)))
+            'from_module' => Common::getCurrentPath($request),
+            'from_action' => Common::getCurrentActionName($request, $this)
         ], $request);
+
         Redis::getContainer()->set('api:token:123', $token);
 
         return [

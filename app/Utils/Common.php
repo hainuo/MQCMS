@@ -97,13 +97,13 @@ class Common
     /**
      * 获取当前访问的控制器的方法名称
      * @param RequestInterface $request
-     * @param $methods
+     * @param $class
      * @return array|mixed|string
      */
-    public static function getCurrentActionName(RequestInterface $request, $methods)
+    public static function getCurrentActionName(RequestInterface $request, $class)
     {
         $pathList = explode('/', $request->decodedPath());
-        // $methods = get_class_methods(get_class($this));
+        $methods = get_class_methods(get_class($class));
         $method = $methods && !empty($pathList) ? array_values(array_intersect($pathList, $methods)) : [];
         $method = !empty($method) && count($method) === 1 ? $method[0] : '';
         return $method;
