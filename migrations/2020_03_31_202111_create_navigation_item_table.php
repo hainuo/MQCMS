@@ -19,7 +19,7 @@ class CreateNavigationItemTable extends Migration
             $table->string('target', 8)->nullable(false)->default('')->comment('链接打开方式 默认方式：空 新页面方式： _blank');
             $table->string('href')->nullable(false)->default('')->comment('链接');
             $table->string('icon', 16)->nullable(false)->default('')->comment('icon图标');
-            $table->unsignedTinyInteger('is_custom', 1)->nullable(false)->default(0)->comment('图标是否自定义 1：是（iconfont） 0：不是(iview自带)');
+            $table->unsignedTinyInteger('is_custom', 1)->nullable(false)->default('0')->comment('图标是否自定义 1：是（iconfont） 0：不是(iview自带)');
             $table->string('path', 16)->nullable(false)->default('')->comment('层级关系');
             $table->unsignedInteger('sort_order')->nullable(false)->default(100)->comment('排序');
             $table->unsignedTinyInteger('status')->nullable(false)->default(1)->comment('状态 1：正常 0：删除');
