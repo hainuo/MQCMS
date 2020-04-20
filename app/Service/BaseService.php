@@ -5,7 +5,7 @@ namespace App\Service;
 
 use App\Constants\ErrorCode;
 use App\Exception\BusinessException;
-use App\Model\Model;
+use App\Model\Common\Model;
 use App\Utils\Common;
 use Carbon\Carbon;
 use Hyperf\HttpServer\Contract\RequestInterface;
@@ -313,7 +313,7 @@ class BaseService
         if (!$this->model || !($this->model instanceof Model)) {
             throw new BusinessException(ErrorCode::SERVER_ERROR);
         }
-        $query = $this->model::query(true); // true $cache Whether to delete the model cache when batch update
+        $query = $this->model::query();
 
         if (!empty($this->with)) {
             $arrCount = Common::getArrCountRecursive($this->with);
@@ -361,7 +361,7 @@ class BaseService
             }
         }
 
-        if (!empty($this->condition)) {
+            if (!empty($this->condition)) {
             $query = $query->where($this->condition);
         }
 

@@ -4,7 +4,10 @@ declare(strict_types=1);
 namespace App\Command;
 
 use Hyperf\Command\Annotation\Command;
+use Hyperf\Contract\ConfigInterface;
 use Hyperf\Devtool\Generator\GeneratorCommand;
+use Hyperf\Utils\Arr;
+use Hyperf\Utils\Str;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -42,6 +45,11 @@ class ServiceCommand extends GeneratorCommand
         // code is untouched. Otherwise, we will continue generating this class' files.
         if (($input->getOption('force') === false) && $this->alreadyExists($inputs['name'])) {
             $output->writeln(sprintf('<fg=red>%s</>', $name . ' already exists!'));
+            return false;
+        }
+
+        if (!$this->getStub()) {
+            $this->output->writeln(sprintf('<fg=red>%s</>', 'module ' . trim($this->input->getArgument('type')) . ' not exists!'));
             return false;
         }
 
@@ -90,7 +98,18 @@ class ServiceCommand extends GeneratorCommand
      */
     protected function getDefaultNamespace(): string
     {
-        return $this->getConfig()['namespace'] ?? 'App\\Service';
+        return $this->getConfig()['namespace'] ?? 'App\\Service\\Common';
+    }
+
+    /**
+     * Get the custom config for generator.
+     */
+    protected function getConfig(): array
+    {
+        $class = Arr::last(explode('\\', static::class));
+        $class = Str::replaceLast('Command', '', $class);
+        $key = 'devtool.mqcms.' . Str::snake($class, '.');
+        return $this->getContainer()->get(ConfigInterface::class)->get($key) ?? [];
     }
 
     /**

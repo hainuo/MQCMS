@@ -17,45 +17,43 @@ class BaseLogic extends AbstractLogic
     public $service;
 
     /**
-     * @param RequestInterface $request
+     * @param int $page
+     * @param int $limit
+     * @param array $search
      * @return array
      */
-    public function index(RequestInterface $request): array
+    public function index($page=1, $limit=10, $search=[]): array
     {
-        $page = intval($request->input('page', 1));
-        $limit = intval($request->input('limit', 10));
-        $page < 1 && $page = 1;
-        $limit > 100 && $limit = 100;
-        $searchForm = $request->has('search') ? $request->input('search') : [];
-
-        return $this->service->index($page, $limit, $searchForm);
+        return $this->service->index($page, $limit, $search);
     }
 
     /**
-     * @param RequestInterface $request
-     * @return int
+     * @param RequestInterface $data
+     * @return int|void
      */
-    public function store(RequestInterface $request): int
+    public function store($data)
     {
+        $this->service->data = $data;
+        return $this->service->store();
     }
 
     /**
-     * @param RequestInterface $request
+     * @param RequestInterface $condition
      * @return array
      */
-    public function show(RequestInterface $request): array
+    public function show($id): array
     {
-        $this->service->condition = ['id' => $request->input('id')];
+        $this->service->condition = ['id' => $id];
         return $this->service->show();
     }
 
     /**
-     * @param RequestInterface $request
+     * @param RequestInterface $condition
      * @return int
      */
-    public function delete(RequestInterface $request): int
+    public function delete($id)
     {
-        $this->service->condition = ['id' => $request->input('id')];
+        $this->service->condition = ['id' => $id];
         return $this->service->delete();
     }
 
@@ -63,7 +61,11 @@ class BaseLogic extends AbstractLogic
      * @param RequestInterface $request
      * @return int
      */
-    public function update(RequestInterface $request): int
+    public function update($data)
     {
+        $this->service->condition = ['id' => $data['id']];
+        unset($data['id']);
+        $this->service->data = $data;
+        return $this->service->update();
     }
 }

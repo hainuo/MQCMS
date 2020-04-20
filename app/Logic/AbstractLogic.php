@@ -14,34 +14,37 @@ abstract class AbstractLogic
     public $service;
 
     /**
-     * @param RequestInterface $request
+     * @param int $page
+     * @param int $limit
+     * @param array $search
      * @return array
      */
-    abstract public function index(RequestInterface $request): array;
+    abstract public function index($page=1, $limit=10, $search=[]): array;
 
     /**
-     * @param RequestInterface $request
+     * @param $condition
      * @return array
      */
-    abstract public function show(RequestInterface $request): array;
+    abstract public function show($condition): array;
 
     /**
-     * @param RequestInterface $request
-     * @return int
+     * @param $data
+     * @return mixed
      */
-    abstract public function store(RequestInterface $request): int;
+    abstract public function store($data);
 
     /**
-     * @param RequestInterface $request
-     * @return int
+     * @param $condition
+     * @return mixed
      */
-    abstract public function delete(RequestInterface $request): int;
+    abstract public function delete($condition);
 
     /**
-     * @param RequestInterface $request
-     * @return int
+     * @param $condition
+     * @param $data
+     * @return mixed
      */
-    abstract public function update(RequestInterface $request): int;
+    abstract public function update($data);
 
     /**
      * 获取token值

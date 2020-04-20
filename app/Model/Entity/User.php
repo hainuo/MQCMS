@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace App\Model\Entity;
 
-use App\Model\UserApplication;
-use App\Model\UserFavorite;
-use App\Model\UserInfo;
+use App\Model\Common\UserApplication;
+use App\Model\Common\UserFavorite;
+use App\Model\Common\UserInfo;
 
-class User extends \App\Model\User
+class User extends \App\Model\Common\User
 {
     /**
      * @return \Hyperf\Database\Model\Relations\HasOne

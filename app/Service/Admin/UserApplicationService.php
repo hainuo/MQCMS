@@ -3,15 +3,6 @@ declare(strict_types=1);
 
 namespace App\Service\Admin;
 
-use App\Model\UserApplication;
-use App\Service\BaseService;
-use Hyperf\Di\Annotation\Inject;
-
-class UserApplicationService extends BaseService
+class UserApplicationService extends \App\Service\Common\UserApplicationService
 {
-    /**
-     * @Inject()
-     * @var UserApplication
-     */
-    public $model;
 }

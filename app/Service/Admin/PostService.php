@@ -3,18 +3,8 @@ declare(strict_types=1);
 
 namespace App\Service\Admin;
 
-use App\Model\Entity\Post;
-use App\Service\BaseService;
-use Hyperf\Di\Annotation\Inject;
-
-class PostService extends BaseService
+class PostService extends \App\Service\Common\PostService
 {
-    /**
-     * @Inject()
-     * @var Post
-     */
-    public $model;
-
     /**
      * @param int $page
      * @param int $limit
@@ -23,9 +13,11 @@ class PostService extends BaseService
      */
     public function index(int $page = 1, int $limit = 10, $search = [])
     {
-        $this->with = ['userInfo' => ['id', 'uuid', 'user_name']];
+        $this->with = [
+            'adminInfo' => ['id', 'uuid', 'account'],
+            'cateInfo' => ['id', 'cate_name']
+        ];
         $this->condition = ['status' => 1];
-
         return parent::index($page, $limit, $search);
     }
 }

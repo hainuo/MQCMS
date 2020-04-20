@@ -44,7 +44,11 @@
         "hyperf/snowflake": "^1.1",
         "nelexa/zip": "^3.1",
         "overtrue/easy-sms": "^1.1",
-        "hyperf/view": "^1.1"
+        "hyperf/view": "^1.1",
+        "duncan3dc/blade": "^4.8",
+        "hyperf/task": "^1.1",
+        "alibabacloud/sdk": "^1.8",
+        "hyperf/amqp": "^1.1"
     },
     "require-dev": {
         "swoft/swoole-ide-helper": "^4.2",

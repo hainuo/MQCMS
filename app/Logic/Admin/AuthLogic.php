@@ -18,18 +18,14 @@ class AuthLogic extends BaseLogic
     public $service;
 
     /**
+     * @param $data
      * @param RequestInterface $request
      * @return array
      * @throws \Exception
      */
-    public function register(RequestInterface $request)
+    public function register($data, RequestInterface $request)
     {
-        $account = $request->input('account');
-        $phone = $request->input('phone');
-        $password = $request->input('password');
-        $ip = $request->getServerParams()['remote_addr'];
-
-        list($lastInsertId, $uuid) = $this->service->register($account, $phone, $password, $ip);
+        list($lastInsertId, $uuid) = $this->service->register(trim($data['account']), trim($data['phone']), $data['password'], $data['ip']);
 
         $token = $this->createAuthToken(['id' => $lastInsertId, 'uuid' => $uuid], $request);
         return [
@@ -37,7 +33,7 @@ class AuthLogic extends BaseLogic
             'expire_time' => JWT::$leeway,
             'uuid' => $uuid,
             'info' => [
-                'name' => $account,
+                'name' => $data['account'],
                 'avatar' => '',
                 'access' => []
             ]
@@ -48,12 +44,9 @@ class AuthLogic extends BaseLogic
      * @param RequestInterface $request
      * @return \Hyperf\Database\Model\Model|\Hyperf\Database\Query\Builder|object|null
      */
-    public function login(RequestInterface $request)
+    public function login($data, RequestInterface $request)
     {
-        $account = trim($request->input('account'));
-        $password = trim($request->input('password'));
-
-        $adminInfo = $this->service->login($account, $password);
+        $adminInfo = $this->service->login(trim($data['account']), $data['password']);
 
         $token = $this->createAuthToken(['id' => $adminInfo['id'], 'uuid' => $adminInfo['uuid']], $request);
         Redis::getContainer()->set('admin:token:' . $adminInfo['uuid'], $token);
@@ -63,7 +56,7 @@ class AuthLogic extends BaseLogic
             'expire_time' => JWT::$leeway,
             'uuid' => $adminInfo['uuid'],
             'info' => [
-                'name' => $account,
+                'name' => $data['account'],
                 'avatar' => $adminInfo['avatar'],
                 'access' => []
             ]

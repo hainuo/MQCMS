@@ -1,12 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace %NAMESPACE%;
 
-use App\Model\%MODEL%;
+use App\Model\Common\%MODEL%;
 use App\Service\BaseService;
 use Hyperf\Di\Annotation\Inject;
-use Hyperf\HttpServer\Contract\RequestInterface;
 
 class %CLASS% extends BaseService
 {
@@ -15,5 +15,4 @@ class %CLASS% extends BaseService
      * @var %MODEL%
      */
     public $model;
-
 }

@@ -126,9 +126,12 @@ class BaseAuthMiddleware implements MiddlewareInterface
         $currentPath = Common::getCurrentPath($this->request);
         $appMutex = env('APP_' . strtoupper($currentPath) . '_MUTEX', true);
         if ($appMutex) {
-            $redisToken = Redis::getContainer()->get(strtolower($currentPath) . ':token:' . $uuid);
-            if ($redisToken && $redisToken !== self::$authToken) {
-                throw new BusinessException(ErrorCode::UNAUTHORIZED, '您已在其他设备登录');
+            $redisOn = env('REDIS_ON', false);
+            if ($redisOn) {
+                $redisToken = Redis::getContainer()->get(strtolower($currentPath) . ':token:' . $uuid);
+                if ($redisToken && $redisToken !== self::$authToken) {
+                    throw new BusinessException(ErrorCode::UNAUTHORIZED, '您已在其他设备登录');
+                }
             }
         }
         return $request;

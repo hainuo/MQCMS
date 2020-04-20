@@ -5,28 +5,10 @@ namespace App\Service\Admin;
 
 use App\Constants\ErrorCode;
 use App\Exception\BusinessException;
-use App\Model\Entity\User;
-use App\Service\BaseService;
-use App\Service\UserInfoService;
 use App\Utils\Common;
-use Hyperf\DbConnection\Db;
-use Hyperf\Di\Annotation\Inject;
-use Hyperf\HttpServer\Contract\RequestInterface;
 
-class UserService extends BaseService
+class UserService extends \App\Service\Common\UserService
 {
-    /**
-     * @Inject()
-     * @var User
-     */
-    public $model;
-
-    /**
-     * @Inject()
-     * @var UserInfoService
-     */
-    public $userInfoService;
-
     /**
      * @param int $page
      * @param int $limit
@@ -49,7 +31,7 @@ class UserService extends BaseService
     public function createUserInfo($post)
     {
         $this->select = ['id'];
-        $this->condition = [['user_name', '=', $post['userName']]];
+        $this->condition = [['user_name', '=', $post['user_name']]];
         $userInfo = parent::show();
         if ($userInfo) {
             throw new BusinessException(ErrorCode::BAD_REQUEST, '用户名已经存在');
@@ -58,9 +40,9 @@ class UserService extends BaseService
         $salt = Common::generateSalt();
         $this->data = [
             'uuid'          => Common::generateSnowId(),
-            'user_name'     => $post['userName'],
-            'real_name'     => $post['realName'],
-            'nick_name'     => $post['userName'] . generate_random_string(6),
+            'user_name'     => $post['user_name'],
+            'real_name'     => $post['real_name'],
+            'nick_name'     => $post['user_name'] . '_' . generate_random_string(6),
             'phone'         => $post['phone'],
             'avatar'        => '',
             'password'      => Common::generatePasswordHash($post['phone'], $salt),
@@ -73,20 +55,7 @@ class UserService extends BaseService
             'created_at'    => time(),
             'updated_at'    => time()
         ];
-        Db::beginTransaction();
-        try{
-            $lastInsertId = parent::insert();
-             $this->userInfoService->data = [
-                'user_id' => $lastInsertId
-            ];
-            $this->userInfoService->store();
-            Db::commit();
-            return $lastInsertId;
-
-        } catch(\Exception $e) {
-            Db::rollBack();
-            throw new BusinessException((int)$e->getCode(), '添加失败');
-        }
+        return parent::insert();
     }
 
     public function getPostList($uid)

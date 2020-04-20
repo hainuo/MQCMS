@@ -5,19 +5,10 @@ namespace App\Service\Admin;
 
 use App\Constants\ErrorCode;
 use App\Exception\BusinessException;
-use App\Model\Entity\Admin;
-use App\Service\BaseService;
 use App\Utils\Common;
-use Hyperf\Di\Annotation\Inject;
 
-class AuthService extends BaseService
+class AuthService extends \App\Service\Common\AdminService
 {
-    /**
-     * @Inject()
-     * @var Admin
-     */
-    public $model;
-
     /**
      * 注册
      * @param $account

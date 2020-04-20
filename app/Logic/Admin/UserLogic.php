@@ -3,7 +3,11 @@ declare(strict_types=1);
 
 namespace App\Logic\Admin;
 
+use App\Constants\ErrorCode;
+use App\Exception\BusinessException;
 use App\Service\Admin\UserService;
+use App\Service\Common\UserInfoService;
+use Hyperf\DbConnection\Db;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Contract\RequestInterface;
 
@@ -16,36 +20,62 @@ class UserLogic extends BaseLogic
     public $service;
 
     /**
-     * @param RequestInterface $request
+     * @Inject()
+     * @var UserInfoService
+     */
+    public $userInfoService;
+
+    /**
+     * @param RequestInterface $data
      * @return int
      * @throws \Exception
      */
-    public function store(RequestInterface $request): int
+    public function store($data)
     {
-        $userName = $request->input('user_name');
-        $realName = $request->input('real_name');
-        $phone = $request->input('phone');
-        $status = $request->input('status', 1);
-        $ip = $request->getServerParams()['remote_addr'];
+        $post = [
+            'user_name' => trim($data['user_name']),
+            'real_name' => trim($data['real_name']),
+            'phone' => trim($data['phone']),
+            'status' => $data['status'],
+            'ip' => $data['ip'],
+        ];
+        Db::beginTransaction();
+        try{
+            $lastInsertId = $this->service->createUserInfo($post);
+            if (!$lastInsertId) {
+                throw new BusinessException(ErrorCode::BAD_REQUEST, '创建用户失败:10000');
+            }
+            $this->userInfoService->data = [
+                'user_id' => $lastInsertId
+            ];
+            $res1 = $this->userInfoService->store();
+            if (!$res1) {
+                throw new BusinessException(ErrorCode::BAD_REQUEST, '创建用户失败:10001');
+            }
+            Db::commit();
+            return true;
 
-        $post = compact('userName', 'realName', 'phone', 'status', 'ip');
-        return $this->service->createUserInfo($post);
+        } catch(\Exception $e) {
+            Db::rollBack();
+            throw new BusinessException((int)$e->getCode(), $e->getMessage());
+        }
     }
 
     /**
-     * @param RequestInterface $request
+     * @param $data
      * @return int
      */
-    public function update(RequestInterface $request): int
+    public function update($data)
     {
-        $this->service->condition = ['id' => $request->input('id')];
-        $this->service->data = [
-            'user_name' => trim($request->input('user_name')),
-            'real_name' => trim($request->input('real_name')),
-            'nick_name' => trim($request->input('user_name')) . generate_random_string(6),
-            'phone'     => trim($request->input('phone')),
-            'status'    => $request->input('status', 1)
+        $post = [
+            'user_name' => trim($data['user_name']),
+            'real_name' => trim($data['real_name']),
+            'nick_name' => trim($data['user_name']) . '_' . generate_random_string(6),
+            'phone' => trim($data['phone']),
+            'status' => $data['status'],
         ];
+        $this->service->condition = ['id' => $data['id']];
+        $this->service->data = $post;
         return $this->service->update();
     }
 }

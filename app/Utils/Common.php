@@ -95,7 +95,19 @@ class Common
     }
 
     /**
-     * 获取当前访问的控制器的方法名称
+     * 获取当前访问的控制器名称
+     * @param $class
+     * @return string|string[]
+     */
+    public static function getCurrentControllerName($class)
+    {
+        $controllers = get_class($class);
+        $controller = str_replace('Controller','', substr(strrchr($controllers, '\\'), 1));
+        return self::uncamelize($controller);
+    }
+
+    /**
+     * 获取当前访问的控制器的方法名称（通过注解路由方式不可用）
      * @param RequestInterface $request
      * @param $class
      * @return array|mixed|string
@@ -106,7 +118,7 @@ class Common
         $methods = get_class_methods(get_class($class));
         $method = $methods && !empty($pathList) ? array_values(array_intersect($pathList, $methods)) : [];
         $method = !empty($method) && count($method) === 1 ? $method[0] : '';
-        return $method;
+        return self::uncamelize($method);
     }
 
     /**
@@ -118,6 +130,17 @@ class Common
         $pathList = explode('/', $request->decodedPath());
         $path = !empty($pathList) ? $pathList[0] : '';
         return $path;
+    }
+
+    /**
+     * 获取模版的渲染路径（index除外）
+     * @param RequestInterface $request
+     * @param $class
+     * @return string
+     */
+    public static function getTemplatePath($class, $method)
+    {
+        return  env('APP_WEB_TEMP', 'default') . '/' . self::getCurrentControllerName($class) . '/' . self::uncamelize($method, '_');
     }
 
     /**
@@ -210,5 +233,77 @@ class Common
     public static function generateUniqid()
     {
         return md5(uniqid((string) rand_float(), true));
+    }
+
+    /**
+     * 中划线转驼峰
+     * @param $uncamelized_words
+     * @param string $separator
+     * @return string
+     */
+    public static function camelize($uncamelized_words, $separator='-')
+    {
+        $uncamelizedWords = $separator . str_replace($separator, " ", strtolower($uncamelized_words));
+        return ltrim(str_replace(" ", "", ucwords($uncamelizedWords)), $separator);
+    }
+
+    /**
+     * 驼峰命名转中划线命名
+     * @param $camel_caps
+     * @param string $separator
+     * @return string
+     */
+    public static function uncamelize($camel_caps, $separator='-')
+    {
+        return strtolower(preg_replace('/([a-z])([A-Z])/', "$1" . $separator . "$2", $camel_caps));
+    }
+
+    /**
+     * 无限极分类
+     * @param $data
+     * @return array
+     */
+    public static function generateTree($data) {
+        $items = [];
+        foreach ($data as $v) {
+            $items[$v['id']] = $v;
+        }
+        $tree = [];
+        foreach ($items as $k => $item) {
+            if(isset($items[$item['parent_id']])) {
+                if (isset($item['is_choose']) && $item['is_choose']) {
+                    $items[$item['parent_id']]['check_list'][] = intval($k);
+                }
+                $items[$item['parent_id']]['children'][] = &$items[$k];
+            }else{
+                $item['check_list'][] = intval($k);
+                $item['children'] = [];
+                $tree[] = &$items[$k];
+            }
+        }
+        return $tree;
+    }
+
+    /**
+     * 无限极分类封装
+     * @param $arr
+     * @param string $key_name
+     * @param int $pid
+     * @param int $lev
+     * @param array $tree
+     * @return array
+     */
+    public static function sonTree($arr, $key_name='name', $pid = 0, $lev = 0, &$tree = [])
+    {
+        foreach ($arr as $key => $value) {
+            if ($value['parent_id'] == $pid) {
+                $value['lev'] = $lev;
+                $value[$key_name] = str_repeat("|---", $lev) . $value[$key_name];
+                $tree[] = $value;
+                self::sonTree($arr, $key_name, $value['id'], ++$lev, $tree);
+                --$lev;
+            }
+        }
+        return $tree;
     }
 }

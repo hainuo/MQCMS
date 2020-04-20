@@ -12,16 +12,7 @@ declare(strict_types=1);
 
 use Hyperf\HttpServer\Router\Router;
 
-Router::addRoute(['GET', 'POST', 'HEAD'], '/', 'App\Controller\Api\V1\IndexController@index');
-
-// api接口
-Router::addGroup('/api/', function () {
-    require_once './config/routes/api.php';
-
-    Router::addGroup('plugins/', function () {
-        require_dir_script(dirname(__DIR__) . '/config/routes/plugins', 'api');
-    });
-});
+Router::addRoute(['GET', 'POST', 'HEAD'], '/', 'App\Controller\Frontend\HomeController@index');
 
 /**
  * admin接口
@@ -32,4 +23,11 @@ Router::addGroup('/admin/', function () {
     Router::addGroup('plugins/', function () {
         require_dir_script(dirname(__DIR__) . '/config/routes/plugins', 'admin');
     });
+});
+
+/**
+ * frontend接口
+ */
+Router::addGroup('/frontend/', function () {
+    require_once './config/routes/frontend.php';
 });

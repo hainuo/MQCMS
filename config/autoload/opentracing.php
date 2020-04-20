@@ -28,7 +28,7 @@ return [
                 // Hyperf will detect the system info automatically as the value if ipv4, ipv6, port is null
                 'ipv4' => '127.0.0.1',
                 'ipv6' => null,
-                'port' => 9501,
+                'port' => 9502,
             ],
             'options' => [
                 'endpoint_url' => env('ZIPKIN_ENDPOINT_URL', 'http://localhost:9411/api/v2/spans'),

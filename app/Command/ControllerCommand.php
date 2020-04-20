@@ -4,7 +4,10 @@ declare(strict_types=1);
 namespace App\Command;
 
 use Hyperf\Command\Annotation\Command;
+use Hyperf\Contract\ConfigInterface;
 use Hyperf\Devtool\Generator\GeneratorCommand;
+use Hyperf\Utils\Arr;
+use Hyperf\Utils\Str;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -17,6 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ControllerCommand extends GeneratorCommand
 {
     protected $name = 'mq:controller';
+
 
     public function __construct()
     {
@@ -57,21 +61,22 @@ class ControllerCommand extends GeneratorCommand
         // stub files so that it gets the correctly formatted namespace and class name.
         $this->makeDirectory($path);
 
-        file_put_contents($path, $this->buildModelClass($name, $inputs['service']));
+        file_put_contents($path, $this->buildModelClass($name, $inputs['logic'], $inputs['module']));
 
         $output->writeln(sprintf('<info>%s</info>', $name . ' created successfully.'));
     }
 
     /**
      * @param $name
-     * @param $service
+     * @param $logic
      * @return string|string[]
      */
-    protected function buildModelClass($name, $service)
+    protected function buildModelClass($name, $logic, $module)
     {
         $stub = file_get_contents($this->getStub());
         $stub = $this->replaceNamespace($stub, $name)->replaceClass($stub, $name);
-        return $this->replaceService($stub, $service);
+        $stub = $this->replaceLogic($stub, $logic);
+        return $this->replaceModule($stub, $module);
     }
 
     /**
@@ -79,9 +84,19 @@ class ControllerCommand extends GeneratorCommand
      * @param $name
      * @return string|string[]
      */
-    protected function replaceService($stub, $name)
+    protected function replaceLogic($stub, $name)
     {
-        return str_replace('%SERVICE%', $name, $stub);
+        return str_replace('%LOGIC%', $name, $stub);
+    }
+
+    /**
+     * @param $stub
+     * @param $name
+     * @return string|string[]
+     */
+    protected function replaceModule($stub, $name)
+    {
+        return str_replace('%MODULE%', ucfirst(strtolower($name)), $stub);
     }
 
     /**
@@ -89,11 +104,7 @@ class ControllerCommand extends GeneratorCommand
      */
     protected function getStub(): string
     {
-        $module = strtolower(trim($this->input->getArgument('module')));
-        if (!in_array($module, ['api', 'admin'])) {
-            return '';
-        }
-        return $this->getConfig()['stub'] ?? __DIR__ . '/stubs/' . strtolower($module) . '_controller.stub';
+        return $this->getConfig()['stub'] ?? __DIR__ . '/stubs/controller.stub';
     }
 
     /**
@@ -102,6 +113,18 @@ class ControllerCommand extends GeneratorCommand
     protected function getDefaultNamespace(): string
     {
         return $this->getConfig()['namespace'] ?? 'App\\Controller\\Admin';
+    }
+
+
+    /**
+     * Get the custom config for generator.
+     */
+    protected function getConfig(): array
+    {
+        $class = Arr::last(explode('\\', static::class));
+        $class = Str::replaceLast('Command', '', $class);
+        $key = 'devtool.mqcms.' . Str::snake($class, '.');
+        return $this->getContainer()->get(ConfigInterface::class)->get($key) ?? [];
     }
 
     /**
@@ -113,7 +136,7 @@ class ControllerCommand extends GeneratorCommand
     {
         return [
             'name' => trim($this->input->getArgument('name')),
-            'service' => trim($this->input->getArgument('service')),
+            'logic' => trim($this->input->getArgument('logic')),
             'module' => trim($this->input->getArgument('module'))
         ];
     }
@@ -127,8 +150,8 @@ class ControllerCommand extends GeneratorCommand
     {
         return [
             ['name', InputArgument::REQUIRED, 'The name of the controller class'],
-            ['service', InputArgument::REQUIRED, 'The name of the service class'],
-            ['module', InputArgument::REQUIRED, 'module type, eg. admin or api ...'],
+            ['logic', InputArgument::REQUIRED, 'The name of the logic class'],
+            ['module', InputArgument::REQUIRED, 'module type, eg. admin, frontend or api ...'],
         ];
     }
 }

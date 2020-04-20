@@ -50,16 +50,16 @@ class AttachmentLogic extends BaseLogic
     }
 
     /**
-     * @param RequestInterface $request
+     * @param $data
      * @return int
      */
-    public function update(RequestInterface $request): int
+    public function update($data): int
     {
-        $this->service->condition = ['id' => $request->input('id')];
+        $this->service->condition = ['id' => $data['id']];
         $this->service->data = [
-            'attach_name'   => $request->input('attach_name'),
-            'attach_url'    => $request->input('attach_url'),
-            'status'        => $request->input('status', 1),
+            'attach_name'   => trim($data['attach_name']),
+            'attach_url'    => trim($data['attach_url']),
+            'status'        => $data['status'],
         ];
         return $this->service->update();
     }
@@ -68,9 +68,9 @@ class AttachmentLogic extends BaseLogic
      * @param RequestInterface $request
      * @return int
      */
-    public function delete(RequestInterface $request): int
+    public function delete($condition): int
     {
-        $this->service->condition = ['id' => $request->input('id')];
+        $this->service->condition = $condition;
         return $this->service->delete();
     }
 }

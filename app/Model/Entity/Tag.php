@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace App\Model\Entity;
 
-use App\Model\TagPostRelation;
+use App\Model\Common\TagPostRelation;
 
-class Tag extends \App\Model\Tag
+class Tag extends \App\Model\Common\Tag
 {
     public function postIds()
     {

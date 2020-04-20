@@ -5,18 +5,9 @@ namespace App\Service\Admin;
 
 use App\Constants\ErrorCode;
 use App\Exception\BusinessException;
-use App\Model\Entity\Attachment;
-use App\Service\BaseService;
-use Hyperf\Di\Annotation\Inject;
 
-class AttachmentService extends BaseService
+class AttachmentService extends \App\Service\Common\AttachmentService
 {
-    /**
-     * @Inject()
-     * @var Attachment
-     */
-    public $model;
-
     /**
      * @param int $page
      * @param int $limit

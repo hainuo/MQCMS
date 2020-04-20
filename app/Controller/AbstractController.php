@@ -57,7 +57,33 @@ abstract class AbstractController
         $validator = $this->validationFactory->make($request->all(), $rules, $messages);
         if ($validator->fails()) {
             $errorMessage = $validator->errors()->first();
-            throw new BusinessException($code, $errorMessage);
+            throw new BusinessException((int) $code, $errorMessage);
+        }
+        return $validator->validated();
+    }
+
+    /**
+     * @param $params
+     * @param RequestInterface $request
+     * @param array $rules
+     * @param array $messages
+     * @param int $code
+     * @return array
+     */
+    public function validateRouteParam(RequestInterface $request, $params, array $rules, array $messages=[], int $code=400)
+    {
+        if (is_array($params)) {
+            $validateParams = [];
+            array_walk($params, function ($item) use (&$validateParams, $request) {
+                $validateParams[$item] = $request->route($item);
+            });
+        } else {
+            $validateParams = [$params => $request->route($params)];
+        }
+        $validator = $this->validationFactory->make($validateParams, $rules, $messages);
+        if ($validator->fails()) {
+            $errorMessage = $validator->errors()->first();
+            throw new BusinessException((int) $code, $errorMessage);
         }
         return $validator->validated();
     }

@@ -44,15 +44,19 @@ return [
     ],
     'mqcms' => [
         'controller' => [
-            'namespace' => 'App\\Controller',
+            'namespace' => 'App\\Controller\\Admin',
         ],
         'service' => [
-            'namespace' => 'App\\Service',
+            'namespace' => 'App\\Service\\Common',
+        ],
+        'logic' => [
+            'namespace' => 'App\\Logic\\Admin',
         ],
         'plugin' => [
             'controllerNamespace' => 'App\\Controller\\Admin\\Plugins',
             'serviceNamespace' => 'App\\Service\\Plugins',
-            'modelNamespace' => 'App\\Model',
+            'modelNamespace' => 'App\\Model\\Common',
         ],
+        'init' => []
     ]
 ];

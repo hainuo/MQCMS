@@ -5,19 +5,10 @@ namespace App\Service\Admin;
 
 use App\Constants\ErrorCode;
 use App\Exception\BusinessException;
-use App\Model\Entity\Admin;
-use App\Model\Model;
-use App\Service\BaseService;
-use Hyperf\Di\Annotation\Inject;
+use App\Model\Common\Model;
 
-class AdminService extends BaseService
+class AdminService extends \App\Service\Common\AdminService
 {
-    /**
-     * @Inject()
-     * @var Admin
-     */
-    public $model;
-
     /**
      * @param int $page
      * @param int $limit
@@ -29,10 +20,22 @@ class AdminService extends BaseService
         $data = parent::index($page, $limit, $search);
 
         foreach ($data['data'] as $key => &$value) {
+            $value['avatar'] =  env('APP_UPLOAD_HOST_URL', '') . $value['avatar'];
             $value['register_time'] = $value['register_time'] ? date('Y-m-d H:i:s', (int)$value['register_time']) : '';
             $value['login_time'] = $value['login_time'] ? date('Y-m-d H:i:s', (int)$value['login_time']) : '';
         }
         return $data;
+    }
+
+    /**
+     * 获取详情
+     * @return \Hyperf\Database\Model\Model|\Hyperf\Database\Query\Builder|object|null
+     */
+    public function show()
+    {
+        $info = parent::show();
+        $info['full_avatar'] =  env('APP_UPLOAD_HOST_URL', '') . $info['avatar'];
+        return $info;
     }
 
     /**
@@ -42,7 +45,7 @@ class AdminService extends BaseService
     public function getModuleTbleList($module)
     {
         try {
-            $moduleClass = 'App\\Model\\' . ucfirst($module);
+            $moduleClass = 'App\\Model\\Common\\' . ucfirst($module);
             $reflectionClass = new \ReflectionClass($moduleClass);
             if (!$reflectionClass->isInstantiable()) {
                 throw new BusinessException(ErrorCode::BAD_REQUEST, '当前类不可实例化');
@@ -57,4 +60,5 @@ class AdminService extends BaseService
             throw new BusinessException(ErrorCode::BAD_REQUEST, $e->getMessage());
         }
     }
+
 }

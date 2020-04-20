@@ -19,7 +19,7 @@ use App\Middleware\AuthMiddleware;
  * @Controller()
  * @Middleware(AuthMiddleware::class)
  * Class BaseController
- * @package App\Controller\Admin\Plugins
+ * @package App\Controller\Admin
  */
 class BaseController extends AbstractController
 {
@@ -36,7 +36,12 @@ class BaseController extends AbstractController
      */
     public function index(RequestInterface $request)
     {
-        return $this->logic->index($request);
+        $page = intval($request->input('page', 1));
+        $limit = intval($request->input('limit', 10));
+        $page < 1 && $page = 1;
+        $limit > 100 && $limit = 100;
+        $searchForm = $request->has('search') ? $request->input('search') : [];
+        return $this->logic->index($page, $limit, $searchForm);
     }
 
     /**
@@ -46,7 +51,6 @@ class BaseController extends AbstractController
      */
     public function store(RequestInterface $request)
     {
-        return $this->logic->store($request);
     }
 
     /**
@@ -56,7 +60,6 @@ class BaseController extends AbstractController
      */
     public function update(RequestInterface $request)
     {
-        return $this->logic->update($request);
     }
 
     /**
@@ -66,10 +69,10 @@ class BaseController extends AbstractController
      */
     public function delete(RequestInterface $request)
     {
-        $this->validateParam($request, [
+        $post = $this->validateParam($request, [
             'id' => 'required|integer',
         ]);
-        return $this->logic->delete($request);
+        return $this->logic->delete($post['id']);
     }
 
     /**
@@ -79,9 +82,9 @@ class BaseController extends AbstractController
      */
     public function show(RequestInterface $request)
     {
-        $this->validateParam($request, [
+        $params = $this->validateParam($request, [
             'id' => 'required|integer'
         ]);
-        return $this->logic->show($request);
+        return $this->logic->show($params['id']);
     }
 }
