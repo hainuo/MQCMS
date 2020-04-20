@@ -7,9 +7,6 @@ MQCMS中的MQ取麻雀拼音首字母。寓意麻雀虽小五脏俱全。
 ### 特别感谢
 本项目基于hyperf框架开发的应用，感谢hyperf的作者提供了这么优秀的框架
 
-目前正在基于MQCMS做中科大项目，待中科大项目完成，会有相应组件和功能补充到MQCMS项目上，会让MQCMS更健壮，敬请期待。。。
-（言外之意，MQCMS进度会慢 😭）
-
 ### 开发文档
 文档正在路上...
 
@@ -48,7 +45,7 @@ git clone https://github.com/MQEnergy/MQCMS
 
 ##### 进入docker运行命令：
 ```
-docker run -it -v /e/web/MQCMS:/mqcms -p 9501:9501 --name mqserver --entrypoint /bin/sh hyperf/hyperf
+docker run -it -v /e/web/MQCMS:/mqcms -p 9502:9502 --name mqserver --entrypoint /bin/sh hyperf/hyperf
 ```
 
 ##### 将Composer镜像设置为阿里云镜像，加速国内下载速度
@@ -87,7 +84,7 @@ php bin/hyperf.php start 或者 php watch (热更新)
 
 ##### 浏览器访问项目
 ```
-http://127.0.0.1:9501
+http://127.0.0.1:9502
 {
     "method": "GET",
     "message": "Hello MQCMS"
@@ -95,6 +92,11 @@ http://127.0.0.1:9501
 ```
 
 ### 扩展功能
+#### 生成model
+```
+php bin/hyperf.php gen:model --path=app/Model/Common --with-comments category
+```
+
 #### command命令扩展
 1、创建service
 ```
@@ -111,22 +113,37 @@ php bin/hyperf.php mq:service -N App\\Service\\Admin FooAdminService FooAdmin
  
 ```
 
-2、创建controller
+2、创建logic
+```
+# 查看mq:logic命令帮助
+php bin/hyperf.php mq:logic --help
+
+# 创建App\Logic命名空间的logic
+php bin/hyperf.php mq:logic FooLogic FooService common
+# FooLogic：logic名称 FooAdmin：model名称 common: service路径
+ 
+# 创建其他命名空间的logic
+php bin/hyperf.php mq:logic -N App\\Logic\\Admin FooLogic FooService common
+# FooLogic：logic名称 FooService：service名称 common: service命名空间
+ 
+```
+
+3、创建controller
 ```
 # 查看mq:controller命令帮助
 php bin/hyperf.php mq:controller --help
 
 # 创建App\Controller命名空间的controller
-php bin/hyperf.php mq:controller FooController FooService admin
-# FooController：controller名称 FooService：service名称 admin：模块名称（后台，接口 可扩展，eg.可写成：Admin ADMIN admin ...）
+php bin/hyperf.php mq:controller FooController FooLogic admin
+# FooController：controller名称 FooLogic：logic名称 admin：模块名称（后台，接口 可扩展，eg.可写成：Admin ADMIN admin ...）
 
 # 创建其他命名空间的controller
-php bin/hyperf.php mq:controller -N App\\Controller\\Api\\V1 FooController FooService api
-# FooController：controller名称 FooService：service名称 api：模块名称（后台，接口 可扩展，eg.可写成：Api API api ...）
+php bin/hyperf.php mq:controller -N App\\Controller\\Api\\V1 FooController FooLogic admin
+# FooController：controller名称 FooLogic：logic名称 admin：logic命名空间（后台，接口 可扩展，eg.可写成：Api API api ...）
 
 ```
 
-3、安装plugin
+4、安装plugin
 
 本项目支持安装开发的插件分为前后端，插件后台路由建议使用注解路由方式实现，目录结构查看upload/plugins/demo.zip文件
 ```
@@ -171,7 +188,7 @@ plugin demo installed successfully!
 
 
 # 访问地址
-http://127.0.0.1:9501/admin/plugins/demo/index/index
+http://127.0.0.1:9502/admin/plugins/demo/index/index
 出现结果：
 {
     "method": "GET",
