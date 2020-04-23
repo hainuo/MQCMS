@@ -3,7 +3,8 @@ body {
     font-weight: normal;
     color: #333;
     font-size: 14px;
-    font-family: Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,微软雅黑,Arial,sans-serif;
+    font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
 
 @font-face {
@@ -25,7 +26,8 @@ body {
 }
 
 a {
-    color: #666;
+    color: #333;
+    font-size: 14px;
 }
 
 .primary {
