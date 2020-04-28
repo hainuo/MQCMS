@@ -6,6 +6,7 @@ namespace App\Controller\Admin;
 use App\Logic\Admin\TagLogic;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
+use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\RequestMapping;
 use Hyperf\HttpServer\Contract\RequestInterface;
@@ -62,6 +63,11 @@ class TagController extends BaseController
         return $this->logic->update($post);
     }
 
+    /**
+     * @GetMapping(path="show")
+     * @param RequestInterface $request
+     * @return array|\Hyperf\Database\Model\Model|\Hyperf\Database\Query\Builder|object|null
+     */
     public function show(RequestInterface $request)
     {
         $params = $this->validateParam($request, [

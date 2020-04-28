@@ -20,4 +20,17 @@ class PostService extends \App\Service\Common\PostService
         $this->condition = ['status' => 1];
         return parent::index($page, $limit, $search);
     }
+
+    /**
+     * @return \Hyperf\Database\Model\Model|\Hyperf\Database\Query\Builder|object|null
+     */
+    public function show()
+    {
+        $info = parent::show();
+        if (!empty($info)) {
+            $info['publish_time'] = date('Y-m-d H:i:s', $info['publish_time']);
+            $info['full_thumb_url'] = $info['thumb_url'] ? env('APP_UPLOAD_HOST_URL', '') . $info['thumb_url'] : '';
+        }
+        return $info;
+    }
 }

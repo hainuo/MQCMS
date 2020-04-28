@@ -22,11 +22,6 @@ class CategoryLogic extends BaseLogic
      */
     public function store($data)
     {
-        $this->service->condition = ['cate_name' => $data['cate_name']];
-        $cateInfo = $this->service->multiTableJoinQueryBuilder()->orWhere(['alias_name' => $data['alias_name']])->first();
-        if (!empty($cateInfo)) {
-            throw new BusinessException(ErrorCode::BAD_REQUEST, '名称或别名已经存在');
-        }
         $data = [
             'cate_name' => $data['cate_name'],
             'alias_name' => $data['alias_name'],
@@ -37,6 +32,7 @@ class CategoryLogic extends BaseLogic
             'seo_desc' => $data['seo_desc'],
             'list_template_id' => $data['list_template_id'],
             'detail_template_id' => $data['detail_template_id'],
+            'sort_order' => $data['sort_order'],
             'status' => $data['status'],
         ];
         return $this->service->save($data);
@@ -48,11 +44,6 @@ class CategoryLogic extends BaseLogic
      */
     public function update($data)
     {
-        $this->service->condition = ['id' => $data['id']];
-        $cateInfo = $this->service->multiTableJoinQueryBuilder()->first();
-        if (empty($cateInfo)) {
-            throw new BusinessException(ErrorCode::BAD_REQUEST, '分类不存在');
-        }
         $this->service->condition = ['id' => $data['id']];
         $this->service->data = [
             'cate_name' => $data['cate_name'],

@@ -34,42 +34,39 @@ class CategoryService extends \App\Service\Common\CategoryService
         $total = $query->count();
         $list = $query->get()->toArray();
         foreach ($list as $key => &$value) {
-            $value['created_at'] = date('Y-m-d H:i:s', (int) $value['created_at']);
-            $value['updated_at'] = date('Y-m-d H:i:s', (int) $value['updated_at']);
+            $value['created_at'] = date('Y-m-d H:i:s', (int)$value['created_at']);
+            $value['updated_at'] = date('Y-m-d H:i:s', (int)$value['updated_at']);
         }
         $pagination['total'] = $total;
         $pagination['data'] = Common::sonTree($list, 'cate_name');
         return $pagination;
     }
 
+    /**
+     * 新增分类
+     * @param $data
+     * @return bool
+     */
     public function save($data)
     {
-        $id = isset($data['id']) ? $data['id'] : '';
-        if ($id) {
-            $this->service->condition = ['id' => $id];
-            $menuInfo = $this->service->multiTableJoinQueryBuilder()->first();
-            if (!$menuInfo) {
-                $menuInfo = new $this->service->model;
-            }
-        } else {
-            $this->service->condition = ['alias_name' => $data['alias_name']];
-            $menuInfo = $this->service->multiTableJoinQueryBuilder()->first();
-            if ($menuInfo) {
-                throw new BusinessException(ErrorCode::BAD_REQUEST, '菜单别名不能重复');
-            }
-            $menuInfo = new $this->service->model;
+        // 判断名称或者别名是否存在
+        $this->condition = ['cate_name' => $data['cate_name']];
+        $cateInfo = $this->multiTableJoinQueryBuilder()->orWhere(['alias_name' => $data['alias_name']])->first();
+        if (!empty($cateInfo)) {
+            throw new BusinessException(ErrorCode::BAD_REQUEST, '名称或别名已经存在');
         }
-        $menuInfo->title         = $data['title'];
-        $menuInfo->alias_title   = $data['alias_title'];
-        $menuInfo->desc          = $data['desc'];
-        $menuInfo->frontend_url  = isset($data['frontend_url']) ? $data['frontend_url'] : '';
-        $menuInfo->backend_url   = $data['backend_url'];
-        $menuInfo->custom        = $data['custom'];
-        $menuInfo->parent_id     = $data['parent_id'];
-        $menuInfo->menu_type     = $data['menu_type'];
-        $menuInfo->status        = $data['status'];
-        $menuInfo->header        = $data['header'];
-        $menuInfo->sort_order    = $data['sort_order'];
+        $menuInfo = new $this->model;
+        $menuInfo->cate_name = $data['cate_name'];
+        $menuInfo->alias_name = $data['alias_name'];
+        $menuInfo->cate_desc = $data['cate_desc'];
+        $menuInfo->parent_id = $data['parent_id'];
+        $menuInfo->seo_title = $data['seo_title'];
+        $menuInfo->seo_keyword = $data['seo_keyword'];
+        $menuInfo->seo_desc = $data['seo_desc'];
+        $menuInfo->list_template_id = $data['list_template_id'];
+        $menuInfo->detail_template_id = $data['detail_template_id'];
+        $menuInfo->status = $data['status'];
+        $menuInfo->sort_order = $data['sort_order'];
 
         Db::beginTransaction();
         try {
@@ -77,11 +74,12 @@ class CategoryService extends \App\Service\Common\CategoryService
                 throw new BusinessException(ErrorCode::BAD_REQUEST, '保存失败：10000');
             }
             $id = $menuInfo->id;
-            $this->service->condition = ['id' => $menuInfo->parent_id];
-            $parentMenuInfo = $this->service->show();
+            $this->condition = ['id' => $menuInfo->parent_id];
+            $parentMenuInfo = $this->show();
             $path = $parentMenuInfo ? $parentMenuInfo['path'] . '-' : '';
 
             $menuInfo->path = $data['parent_id'] == 0 ? $id : $path . $id;
+
             if (!$menuInfo->save()) {
                 throw new BusinessException(ErrorCode::BAD_REQUEST, '保存失败：10001');
             }
@@ -93,4 +91,5 @@ class CategoryService extends \App\Service\Common\CategoryService
             throw new BusinessException(ErrorCode::BAD_REQUEST, $e->getMessage());
         }
     }
+
 }

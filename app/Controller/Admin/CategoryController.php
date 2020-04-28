@@ -44,6 +44,7 @@ class CategoryController extends BaseController
         $post['seo_desc'] = $request->input('seo_desc', '');
         $post['list_template_id'] = $request->input('list_template_id', '');
         $post['detail_template_id'] = $request->input('detail_template_id', '');
+        $post['sort_order'] = $request->input('sort_order', 50);
         return $this->logic->store($post);
     }
 

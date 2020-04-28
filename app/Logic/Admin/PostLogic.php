@@ -23,6 +23,7 @@ class PostLogic extends BaseLogic
     public function update($data)
     {
         $this->service->condition = ['id' => $data['id']];
+        unset($data['id']);
         $this->service->data = $data;
         return $this->service->update();
     }

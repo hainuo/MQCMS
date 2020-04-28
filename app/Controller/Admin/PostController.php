@@ -39,7 +39,7 @@ class PostController extends BaseController
         ]);
         $post['member_id'] = $request->getAttribute('uid');
         $post['post_excerpt']= $request->input('post_excerpt', '');
-        $post['post_source '] = $request->input('post_source ', '');
+        $post['post_source'] = $request->input('post_source', '');
         $post['thumb_url'] = $request->input('thumb_url', '');
         $post['publish_time'] = strtotime($request->input('publish_time', date('Y-m-d H:i:s')));
         $post['link_url'] = $request->input('link_url', '');
@@ -73,9 +73,9 @@ class PostController extends BaseController
         ]);
         $post['member_id'] = $request->getAttribute('uid');
         $post['post_excerpt']= $request->input('post_excerpt', '');
-        $post['post_source '] = $request->input('post_source ', '');
+        $post['post_source'] = $request->input('post_source', '');
         $post['thumb_url'] = $request->input('thumb_url', '');
-        $post['publish_time'] = $request->input('publish_time', '');
+        $post['publish_time'] = strtotime($request->input('publish_time', date('Y-m-d H:i:s')));
         $post['link_url'] = $request->input('link_url', '');
         $post['use_link'] = $request->input('use_link', '');
         $post['relation_tag_ids'] = $request->input('relation_tag_ids', '');
